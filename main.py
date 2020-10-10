@@ -12,14 +12,6 @@ PATH = os.path.dirname(os.path.abspath(__file__))
 info_path = PATH + "/info"
 report_path = PATH + "/report"
 
-
-def make_dir(dirs):
-    if not os.path.exists(dirs):
-        os.makedirs(dirs)
-
-
-make_dir(info_path)
-make_dir(report_path)
 device_info = None
 running = None
 window = tk.Tk()
@@ -38,8 +30,8 @@ def begin():
         msgbox.showerror(title='启动失败', message='未填写应用包名')
         return
     pid = app_pid(package_name)
-    t.insert("insert", package_name + "\n")
-    t.insert("insert", pid + "\n")
+    t.insert("end", package_name + "\n")
+    t.insert("end", pid + "\n")
     if pid == "":
         msgbox.showerror(title='启动失败', message='未发现对应应用的pid')
         return
@@ -48,24 +40,24 @@ def begin():
     device_info = DeviceInfoRun(package_name)
     device_info.start()
     running = True
-    t.insert("insert", "启动性能收集\n")
+    t.insert("end", "启动性能收集\n")
 
 
 def end():
     global running
     if running is True:
         device_info.end()
-        t.insert('insert', "关闭性能收集\n")
+        t.insert('end', "关闭性能收集\n")
         time.sleep(5)
-        info_report()
         running = None
+        info_report()
     else:
-        t.insert('insert', "未启动别瞎搞!\n")
+        t.insert('end', "未启动别瞎搞!\n")
 
 
-b1 = tk.Button(window, text='insert point', width=10,
+b1 = tk.Button(window, text='启动', width=10,
                height=2, command=begin)
-b2 = tk.Button(window, text='insert point', width=10,
+b2 = tk.Button(window, text='关闭', width=10,
                height=2, command=end)
 b1.pack()
 b2.pack()
