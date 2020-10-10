@@ -304,3 +304,35 @@ class LogCatInfo(Info):
         with p_obj:
             for line in p_obj.stdout:
                 writer.writelines(str(line))
+
+
+class BatteryCatInfo(Info):
+    def __init__(self):
+        super().__init__()
+        self.writer = None
+        self.count = 1
+        self.BATTERY = "battery(mAh)"
+        self.UID = "UID"
+
+    def get_start_info(self):
+        '''
+        重置电量统计
+        :return:
+        '''
+        self.task.shell('dumpsys batterystats --reset')
+
+    def get_end_info(self):
+        '''
+        获取耗电
+        :return:
+        '''
+        uid = self.task.uid.replace("_", "")
+        comd = "dumpsys batterystats |grep 'Uid %s'" % uid
+        result = self.task.shell(comd)
+        res = re.search(r":\s+(?P<battery>[^\s]+)\s+", result)
+        battery = res.groupdict()["battery"]
+        dirs = self.task.output + "/battery_stats/"
+        file_name = "battery"
+        field_names = [self.UID, self.BATTERY]
+        writer = utils.get_csv_writer(dirs, file_name, field_names)
+        writer.writerow({self.UID: uid, self.BATTERY: battery})

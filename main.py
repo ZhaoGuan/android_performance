@@ -18,7 +18,8 @@ window = tk.Tk()
 window.title("Android性能收集")
 
 window.geometry('500x300')
-my_label = tk.Label(window, text="请先连接好数据线并且确保ADB能够正常使用")
+my_label = tk.Label(window, text="请先连接好数据线并且确保ADB能够正常使用,\n"
+                                 "电量的测试需要通过ip连接adb。")
 package_name_entry = tk.Entry(window)
 my_label.pack()
 package_name_entry.pack()

@@ -13,6 +13,9 @@ template = """
 <head>
     <title>Android Info</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+    <!-- 最新版本的 Bootstrap 核心 CSS 文件 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css"
+          crossorigin="anonymous">
     <meta name="viewport" content="initial-scale = 1, user-scalable = no">
     <meta charset="UTF-8">
 </head>
@@ -21,6 +24,18 @@ template = """
 <canvas id="memoryChart"></canvas>
 <canvas id="fpsChart"></canvas>
 <canvas id="netChart"></canvas>
+<div>
+    <table class="table table-bordered table-hover">
+        <tr>
+            <th>耗电量</th>
+        </tr>
+
+        <tr>
+            <td>{{ battery_stats }} mAH</td>
+        </tr>
+    </table>
+</div>
+
 </body>
 <script>
     const wh = document.body.clientHeight;
@@ -115,7 +130,6 @@ template = """
 
 
 def make_dir(dirs):
-    print(dirs)
     if not os.path.exists(dirs):
         os.makedirs(dirs)
 
@@ -179,10 +193,16 @@ def info_report():
             net_total_down_data.append(net_total_down)
             net_total_up_data.append(net_total_up)
     report = Template(template)
+    battery_file = new_file(file_path + "battery_stats/")
+    with open(battery_file) as battery_f:
+        data = csv.DictReader(battery_f)
+        for row in data:
+            battery_stats = row["battery(mAh)"]
     result = report.render(cpu_time_labels=cpu_time_labels, cpu_data=cpu_data, mem_time_labels=mem_time_labels,
                            mem_data=mem_data, fps_time_labels=fps_time_labels, fps_data=fps_data,
                            net_avg_down_data=net_avg_down_data, net_avg_up_data=net_avg_up_data,
-                           net_total_down_data=net_total_down_data, net_total_up_data=net_total_up_data)
+                           net_total_down_data=net_total_down_data, net_total_up_data=net_total_up_data,
+                           battery_stats=battery_stats)
     make_dir(PATH + "/../report/")
     with open(PATH + "/../report/" + str(int(time.time())) + "_report.html", "w") as f:
         f.write(result)
