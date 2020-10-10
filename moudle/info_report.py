@@ -114,6 +114,12 @@ template = """
 """
 
 
+def make_dir(dirs):
+    print(dirs)
+    if not os.path.exists(dirs):
+        os.makedirs(dirs)
+
+
 def new_file(path):
     file_lists = os.listdir(path)
     file_lists.sort(key=lambda fn: os.path.getmtime(path + fn)
@@ -177,6 +183,7 @@ def info_report():
                            mem_data=mem_data, fps_time_labels=fps_time_labels, fps_data=fps_data,
                            net_avg_down_data=net_avg_down_data, net_avg_up_data=net_avg_up_data,
                            net_total_down_data=net_total_down_data, net_total_up_data=net_total_up_data)
+    make_dir(PATH + "/../report/")
     with open(PATH + "/../report/" + str(int(time.time())) + "_report.html", "w") as f:
         f.write(result)
 

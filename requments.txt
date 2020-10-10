@@ -3,4 +3,5 @@ Jinja2==2.11.2
 macholib==1.14
 MarkupSafe==1.1.1
 modulegraph==0.18
-py2app==0.22
+pyinstaller==4.0
+pyinstaller-hooks-contrib==2020.9
