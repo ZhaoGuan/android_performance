@@ -59,6 +59,8 @@ def start_avg_time():
         return
     if the_run_time == "":
         the_run_time = 5
+    t.insert("end", "启动次数为: %s\n" % str(the_run_time))
+    t.insert("end", "请等待执行结束....\n")
     ast = AppStart(package_name, activity, int(the_run_time))
     avg_start_time = ast.run()
     start_report = True
@@ -91,7 +93,7 @@ def end():
         t.insert('end', "关闭性能收集\n")
         time.sleep(5)
         running = None
-        info_report()
+        info_report(start_report)
     else:
         t.insert('end', "未启动别瞎搞!\n")
 

@@ -329,10 +329,13 @@ class BatteryCatInfo(Info):
         uid = self.task.uid.replace("_", "")
         comd = "dumpsys batterystats |grep 'Uid %s'" % uid
         result = self.task.shell(comd)
-        res = re.search(r":\s+(?P<battery>[^\s]+)\s+", result)
-        battery = res.groupdict()["battery"]
         dirs = self.task.output + "/battery_stats/"
         file_name = "battery"
         field_names = [self.UID, self.BATTERY]
         writer = utils.get_csv_writer(dirs, file_name, field_names)
-        writer.writerow({self.UID: uid, self.BATTERY: battery})
+        res = re.search(r":\s+(?P<battery>[^\s]+)\s+", result)
+        if res:
+            battery = res.groupdict()["battery"]
+            writer.writerow({self.UID: uid, self.BATTERY: battery})
+        else:
+            writer.writerow({self.UID: uid, self.BATTERY: "None"})
