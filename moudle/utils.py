@@ -2,8 +2,18 @@ import csv
 import os
 import re
 import time
+import subprocess
 
 the_time = time.time()
+
+
+def run_command(command):
+    p_obj = subprocess.Popen(
+        args="adb shell " + command,
+        stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE, shell=True, encoding="utf-8")
+    result = p_obj.stdout.read()
+    return result
 
 
 def get_csv_writer(dirs, file_name, field_names):
@@ -34,16 +44,21 @@ def get_action_writer(dirs, file_name, field_names):
     return writer
 
 
-def get_applicationid_by_pid(d, pid):
-    ps_info = re.findall("\S+", d._adb_shell("ps | grep " + pid))
+def get_applicationid_by_pid(pid):
+    ps_info = re.findall("\S+", run_command("ps | grep " + pid))
     return ps_info[len(ps_info) - 1]
 
 
-def get_pid_by_applicationid(d, applicationid):
-    ps_info = re.findall("\S+", d._adb_shell("ps | grep " + applicationid))
+def get_pid_by_applicationid(applicationid):
+    ps_info = re.findall("\S+", run_command("ps | grep " + applicationid))
     return ps_info[1]
 
 
-def get_version_name_by_applicationid(d, applicationid):
-    version_info = d._adb_shell("dumpsys package " + applicationid + " | grep versionName")
+def get_version_name_by_applicationid(applicationid):
+    version_info = run_command("dumpsys package " + applicationid + " | grep versionName")
     return re.findall("\d+.+\d", version_info)[0]
+
+
+if __name__ == "__main__":
+    w = get_action_writer("./test/", "test", ["UID", "battery(mAh)"])
+    w.writerow({'UID': 'u0a200', 'battery(mAh)': '0.233'})
