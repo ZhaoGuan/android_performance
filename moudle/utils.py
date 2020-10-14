@@ -5,6 +5,7 @@ import time
 import subprocess
 
 the_time = time.time()
+MOUDLE_PATH = os.path.dirname(os.path.abspath(__file__))
 
 
 def make_dir(dirs):

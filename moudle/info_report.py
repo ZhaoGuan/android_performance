@@ -57,7 +57,7 @@ template = """
 
         <tr>
             <td>{{ battery_stats }} mAH</td>
-            <td>{{ battery_time }} mAH</td>
+            <td>{{ battery_time }} S</td>
         </tr>
     </table>
 </div>
@@ -182,7 +182,7 @@ diff_template = """
             <th>平均下行网络使用(KB)</th>
             <th>平均上行网络使用(KB)</th>
             <th>平均电量使用(mAH/S)</th>
-            <th>平均启动时间</th>
+            <th>平均启动时间(ms)</th>
         </tr>
         {% for data in data_list %}
         <tr>
@@ -416,4 +416,3 @@ def diff_report(path_list=None):
     with open(PATH + "/../report/" + base_name + "_" + str(int(time.time())) + "_report.html",
               "w") as f:
         f.write(result)
-

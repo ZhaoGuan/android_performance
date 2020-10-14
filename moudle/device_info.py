@@ -4,7 +4,7 @@
 from moudle.info import CPUInfo, MemInfo, FPSInfo, NetInfo, LogCatInfo, BatteryCatInfo
 from moudle.info_task import InfoTask
 from moudle.task import Task
-from moudle.utils import run_command, new_dir
+from moudle.utils import run_command, new_dir, make_dir
 import os
 
 PATH = os.path.dirname(os.path.abspath(__file__))
@@ -23,7 +23,9 @@ def app_uid(package_name):
 
 
 class DeviceInfoRun:
-    def __init__(self, package_name):
+    def __init__(self, the_version_name, package_name):
+        make_dir(PATH + "/../info")
+        make_dir(PATH + "/../info/" + str(the_version_name))
         task = Task("myTest")
         task.shell = run_command
         task.pid = app_pid(package_name=package_name)
@@ -35,7 +37,7 @@ class DeviceInfoRun:
         task.add_info(FPSInfo())
         task.add_info(NetInfo())
         task.add_info(LogCatInfo())
-        task.add_info(BatteryCatInfo())
+        task.add_info(())
         self.info_task = InfoTask(task)
 
     def start(self):
