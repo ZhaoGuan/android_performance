@@ -313,6 +313,8 @@ class BatteryCatInfo(Info):
         self.count = 1
         self.BATTERY = "battery(mAh)"
         self.UID = "UID"
+        self.TIME = "time"
+        self.begin_time = None
 
     def get_start_info(self):
         '''
@@ -320,6 +322,7 @@ class BatteryCatInfo(Info):
         :return:
         '''
         self.task.shell('dumpsys batterystats --reset')
+        self.begin_time = time.time()
 
     def get_end_info(self):
         '''
@@ -328,14 +331,16 @@ class BatteryCatInfo(Info):
         '''
         uid = self.task.uid.replace("_", "")
         comd = "dumpsys batterystats |grep 'Uid %s'" % uid
+        use_time = time.time() - self.begin_time
         result = self.task.shell(comd)
         dirs = self.task.output + "/battery_stats/"
         file_name = "battery"
-        field_names = [self.UID, self.BATTERY]
+        field_names = [self.UID, self.TIME, self.BATTERY]
         writer = utils.get_csv_writer(dirs, file_name, field_names)
         res = re.search(r":\s+(?P<battery>[^\s]+)\s+", result)
+
         if res:
             battery = res.groupdict()["battery"]
-            writer.writerow({self.UID: uid, self.BATTERY: battery})
+            writer.writerow({self.UID: uid, self.TIME: use_time, self.BATTERY: battery})
         else:
-            writer.writerow({self.UID: uid, self.BATTERY: "None"})
+            writer.writerow({self.UID: uid, self.TIME: None, self.BATTERY: None})
