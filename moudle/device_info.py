@@ -37,7 +37,7 @@ class DeviceInfoRun:
         task.add_info(FPSInfo())
         task.add_info(NetInfo())
         task.add_info(LogCatInfo())
-        task.add_info(())
+        task.add_info((BatteryCatInfo()))
         self.info_task = InfoTask(task)
 
     def start(self):

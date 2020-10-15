@@ -49,7 +49,7 @@ template = """
             <td>{{ start_data.avg_start_time }}</td>
         </tr>
     </table>
-    <table class="table table-bordered table-hover">
+    <table id="battery_report" class="table table-bordered table-hover">
         <tr>
             <th>耗电量</th>
             <th>用时(秒)</th>
@@ -74,6 +74,7 @@ template = """
     const fpsChart = document.getElementById('fpsChart');
     const netChart = document.getElementById('netChart');
     document.getElementById('start_report').hidden = {{ show_start_report }};
+    document.getElementById('battery_report').hidden = {{ show_battery_report }};
     cpuChart.height = wh / 4;
     memoryChart.height = wh / 4;
     fpsChart.height = wh / 4;
@@ -272,7 +273,11 @@ def get_battery_data(battery_file):
         for row in data:
             battery_time = row["time"]
             battery_stats = row["battery(mAh)"]
-    return battery_stats, battery_time
+        if battery_stats == "":
+            show_battery_report = "true"
+        else:
+            show_battery_report = "false"
+    return battery_stats, battery_time, show_battery_report
 
 
 def get_start_data(start_file):
@@ -303,7 +308,7 @@ def info_report(app, show_start_report=True):
     net_file = new_file(file_path + "/net_stats/")
     net_time_labels, net_avg_down_data, net_avg_up_data, net_total_down_data, net_total_up_data = get_net_data(net_file)
     battery_file = new_file(file_path + "/battery_stats/")
-    battery_stats, battery_time = get_battery_data(battery_file)
+    battery_stats, battery_time, show_battery_report = get_battery_data(battery_file)
     try:
         start_file = new_file(file_path + "/start_stats/")
     except:
@@ -313,7 +318,8 @@ def info_report(app, show_start_report=True):
     result = report.render(app=app, cpu_time_labels=cpu_time_labels, cpu_data=cpu_data, mem_time_labels=mem_time_labels,
                            mem_data=mem_data, fps_time_labels=fps_time_labels, fps_data=fps_data,
                            net_total_down_data=net_total_down_data, net_total_up_data=net_total_up_data,
-                           battery_time=battery_time, battery_stats=battery_stats, show_start_report=show_start_report,
+                           show_battery_report=show_battery_report, battery_time=battery_time,
+                           battery_stats=battery_stats, show_start_report=show_start_report,
                            start_data=start_data)
     make_dir(PATH + "/../report/")
     with open(PATH + "/../report/" + app["tag"] + "_" + str(int(time.time())) + "_report.html", "w") as f:
@@ -381,7 +387,7 @@ def avg_battery(base_path):
     avg_battery_list = []
     files = file_list(base_path + "/battery_stats/")
     for file in files:
-        battery_stats, battery_time = get_battery_data(file)
+        battery_stats, battery_time, show_battery_report = get_battery_data(file)
         if battery_stats != "":
             time_battery = float(battery_stats) / float(battery_time)
             avg_battery_list.append(time_battery)
