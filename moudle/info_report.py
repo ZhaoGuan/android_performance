@@ -273,7 +273,7 @@ def get_battery_data(battery_file):
         for row in data:
             battery_time = row["time"]
             battery_stats = row["battery(mAh)"]
-        if battery_stats is "":
+        if battery_stats == "":
             show_battery_report = "true"
         else:
             show_battery_report = "false"
