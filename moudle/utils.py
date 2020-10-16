@@ -105,7 +105,8 @@ def get_version_name_by_applicationid(applicationid):
 
 
 def run_proxy(port):
-    sys.argv = ["", "-p", str(port), "-s", PATH + "/../proxy/proxy_run.py"]
+    script_path = os.path.abspath(PATH + "/../proxy/proxy_run.py")
+    sys.argv = ["", "-p", str(port), "-s", script_path]
     try:
         multiprocessing.set_start_method("fork")
     except:

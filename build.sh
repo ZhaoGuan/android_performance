@@ -1,4 +1,6 @@
 rm -rf build dist
-pyinstaller ./main.spec
+pyinstaller ./main.py -n android_performance \
+  --hidden-import=yaml \
+  --hidden-import=jinja2
 cp -rf moudle/mitmproxy ./dist/android_performance
-cp -rf proxy ./dist/client_url_statistics
+cp -rf proxy ./dist/android_performance

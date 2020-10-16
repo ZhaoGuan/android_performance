@@ -9,8 +9,8 @@ import time
 import yaml
 
 PATH = os.path.dirname(os.path.abspath(__file__))
-info_path = os.path.abspath(PATH + "/../../info")
-recording_path = os.path.abspath(info_path + "/recording/")
+info_path = os.path.abspath(PATH + "/../info")
+recording_path = os.path.abspath(info_path + "/../recording/")
 report_path = os.path.abspath(info_path + "/../report/")
 template = '''
 <!DOCTYPE html>
@@ -53,8 +53,8 @@ template = '''
 
             {% for data in data_list %}
             <tr>
-                <td width="80px">{{data.time}}</td>
-                <td width="80%">
+                <td>{{data.time}}</td>
+                <td width="70%">
                     <a href={{data.url}}>{{data.url}}</a>
                 </td>
                 <td>{{data.method}}</td>
@@ -99,14 +99,14 @@ def make_report():
     make_dir(report_path)
     result = []
     new_path = new_dir(recording_path)
+    print(new_path)
     with open(new_path)as f:
-        # with open(recording_path + "/" + name + ".csv")as f:
         data = csv.DictReader(f)
-    for row in data:
-        result.append(row)
+        for row in data:
+            result.append(row)
     report = Template(template)
     result = report.render(data_list=result)
-    with open(report_path + "/" + str(int(time.time())) + "_report.html", "w") as f:
+    with open(report_path + "/" + str(int(time.time())) + "_url_report.html", "w") as f:
         f.write(result)
 
 
@@ -148,7 +148,3 @@ class UrlStatistics:
     def done(self):
         self.f.close()
         make_report()
-
-
-if __name__ == "__main__":
-    make_report()

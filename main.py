@@ -33,24 +33,24 @@ def start_avg_time():
         # msgbox.showerror(title='启动失败', message='未填写应用包名')
         # return
         package_name = "com.yiding.jianhuo"
-        t.insert("end", "使用默认包名%s\n" % str(package_name))
+        proxy_window_text.insert("end", "使用默认包名%s\n" % str(package_name))
     if activity == "":
         # msgbox.showerror(title='启动失败', message='未填写启动页名称')
         # return
         activity = "com.yiding.jianhuo.SplashActivity"
-        t.insert("end", "使用默认启动页%s\n" % str(package_name))
+        proxy_window_text.insert("end", "使用默认启动页%s\n" % str(package_name))
     if the_run_time == "":
         the_run_time = 5
     if the_version_name == "":
         the_version_name = get_version_name_by_applicationid(package_name)
-    t.insert("end", "启动次数为: %s\n" % str(the_run_time))
-    t.insert("end", "请等待执行结束....\n")
+    proxy_window_text.insert("end", "启动次数为: %s\n" % str(the_run_time))
+    proxy_window_text.insert("end", "请等待执行结束....\n")
     ast = AppStart(the_version_name, package_name, activity, int(the_run_time))
     avg_start_time = ast.run()
     start_report = True
-    t.insert("end", "最快启动时间为: %s\n" % str(ast.fast))
-    t.insert("end", "最慢启动时间为: %s\n" % str(ast.slow))
-    t.insert("end", "平均启动时间为: %s\n" % str(avg_start_time))
+    proxy_window_text.insert("end", "最快启动时间为: %s\n" % str(ast.fast))
+    proxy_window_text.insert("end", "最慢启动时间为: %s\n" % str(ast.slow))
+    proxy_window_text.insert("end", "平均启动时间为: %s\n" % str(avg_start_time))
 
 
 def android_performance_begin():
