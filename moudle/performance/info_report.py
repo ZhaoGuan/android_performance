@@ -9,6 +9,8 @@ from moudle.utils import new_dir, new_file, make_dir, dir_list, file_list
 import numpy as nu
 
 PATH = os.path.dirname(os.path.abspath(__file__))
+info_dir_path = os.path.abspath(PATH + "/../../info/")
+report_dir_path = os.path.abspath(PATH + "/../../report/")
 template = """
 <!doctype html>
 <html>
@@ -298,7 +300,7 @@ def info_report(app, show_start_report=True):
         show_start_report = "false"
     else:
         show_start_report = "true"
-    file_path = new_dir(PATH + "/../info/")
+    file_path = new_dir(info_dir_path)
     cpu_file = new_file(file_path + "/cpu_stats/")
     cpu_time_labels, cpu_data = get_cpu_data(cpu_file)
     mem_file = new_file(file_path + "/mem_stats/")
@@ -321,8 +323,8 @@ def info_report(app, show_start_report=True):
                            show_battery_report=show_battery_report, battery_time=battery_time,
                            battery_stats=battery_stats, show_start_report=show_start_report,
                            start_data=start_data)
-    make_dir(PATH + "/../report/")
-    with open(PATH + "/../report/" + app["tag"] + "_" + str(int(time.time())) + "_report.html", "w") as f:
+    make_dir(report_dir_path)
+    with open(report_dir_path + "/" + app["tag"] + "_" + str(int(time.time())) + "_report.html", "w") as f:
         f.write(result)
 
 
@@ -406,7 +408,7 @@ def tag_info_data(tag_dir_path):
 
 def diff_report(path_list=None):
     if path_list is None:
-        the_dif_list = dir_list(PATH + "/../info/")
+        the_dif_list = dir_list(info_dir_path)
         path_list = the_dif_list[-2:]
     name_list = []
     data_list = []
@@ -417,8 +419,8 @@ def diff_report(path_list=None):
         name_list.append(name)
     report = Template(diff_template)
     result = report.render(data_list=data_list)
-    make_dir(PATH + "/../report/")
+    make_dir(report_dir_path)
     base_name = "_".join(name_list)
-    with open(PATH + "/../report/" + base_name + "_" + str(int(time.time())) + "_report.html",
+    with open(report_dir_path + "/" + base_name + "_" + str(int(time.time())) + "_report.html",
               "w") as f:
         f.write(result)
