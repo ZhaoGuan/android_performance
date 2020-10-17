@@ -10,7 +10,7 @@ import yaml
 
 PATH = os.path.dirname(os.path.abspath(__file__))
 info_path = os.path.abspath(PATH + "/../info")
-recording_path = os.path.abspath(info_path + "/../recording/")
+recording_path = os.path.abspath(info_path + "/recording/")
 report_path = os.path.abspath(info_path + "/../report/")
 template = '''
 <!DOCTYPE html>
@@ -47,8 +47,8 @@ template = '''
                 <th>url</th>
                 <th>方法</th>
                 <th>状态码</th>
-                <th>大小</th>
-                <th>响应时间</th>
+                <th>大小 kb</th>
+                <th>响应时间 ms</th>
             </tr>
 
             {% for data in data_list %}
@@ -60,7 +60,7 @@ template = '''
                 <td>{{data.method}}</td>
                 <td>{{data.status_code}}</td>
                 <td>{{data.response_size}}</td>
-                <td>{{data.spend_time}}</td>
+                <td class={{ data.spend_time.class }} >{{data.spend_time.data}}</td>
             </tr>
             {% endfor %}
         </table>
@@ -99,10 +99,15 @@ def make_report():
     make_dir(report_path)
     result = []
     new_path = new_dir(recording_path)
-    print(new_path)
     with open(new_path)as f:
         data = csv.DictReader(f)
         for row in data:
+            spend_time = int(row["spend_time"])
+            if spend_time > 200:
+                the_class = "danger"
+            else:
+                the_class = ""
+            row["spend_time"] = {"class": the_class, "data": spend_time}
             result.append(row)
     report = Template(template)
     result = report.render(data_list=result)
@@ -148,3 +153,7 @@ class UrlStatistics:
     def done(self):
         self.f.close()
         make_report()
+
+
+if __name__ == "__main__":
+    make_report()
