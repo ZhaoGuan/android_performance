@@ -47,7 +47,7 @@ template = '''
                 <th>url</th>
                 <th>方法</th>
                 <th>状态码</th>
-                <th>大小 kb</th>
+                <th>大小 b</th>
                 <th>响应时间 ms</th>
             </tr>
 
