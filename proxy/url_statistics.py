@@ -7,6 +7,7 @@ import csv
 import os
 import time
 import yaml
+import json
 
 PATH = os.path.dirname(os.path.abspath(__file__))
 info_path = os.path.abspath(PATH + "/../info")
@@ -58,7 +59,7 @@ template = '''
                     <a href={{data.url}}>{{data.url}}</a>
                 </td>
                 <td>{{data.method}}</td>
-                <td>{{data.status_code}}</td>
+                <td class={{ data.status_code.class }} >{{data.status_code.data}}</td>
                 <td>{{data.response_size}}</td>
                 <td class={{ data.spend_time.class }} >{{data.spend_time.data}}</td>
             </tr>
@@ -89,8 +90,7 @@ def dir_list(path):
     if path[-1] != "/":
         path += "/"
     dir_lists = os.listdir(path)
-    dir_lists.sort(key=lambda fn: os.path.getmtime(path + fn)
-    if os.path.isdir(path + fn) else 0, reverse=False)
+    dir_lists.sort(key=lambda fn: os.path.getmtime(path + fn) if not os.path.isdir(path + fn) else 0, reverse=False)
     dir_lists = [path + the_dir for the_dir in dir_lists]
     return dir_lists
 
@@ -102,11 +102,27 @@ def make_report():
     with open(new_path)as f:
         data = csv.DictReader(f)
         for row in data:
+            print(row)
+            status_code = row["status_code"]
+            response_header = row["response_header"]
+            if 'json' in str(response_header):
+                response = json.loads(row["response_body"])
+                if "code" in response.keys() and str(response["code"]) == "1001":
+                    code_result = True
+                else:
+                    code_result = False
+            else:
+                code_result = False
+            if status_code[0] not in ["2", "3"] or code_result:
+                status_code_class = "danger"
+            else:
+                status_code_class = ""
             spend_time = int(row["spend_time"])
             if spend_time > 200:
                 the_class = "danger"
             else:
                 the_class = ""
+            row["status_code"] = {"class": status_code_class, "data": status_code}
             row["spend_time"] = {"class": the_class, "data": spend_time}
             result.append(row)
     report = Template(template)
@@ -124,7 +140,8 @@ class UrlStatistics:
         self.file_path = recording_path + "/" + self.file_name + ".csv"
         self.f = open(self.file_path, "w")
         self.writer = csv.DictWriter(self.f,
-                                     fieldnames=["time", "url", "status_code", "method", "response_size", "spend_time"])
+                                     fieldnames=["time", "url", "status_code", "method", "response_size", "spend_time",
+                                                 "response_header", "response_body"])
         self.writer.writeheader()
         with open(PATH + "/config.yml") as f:
             self.config = yaml.safe_load(f)
@@ -136,18 +153,22 @@ class UrlStatistics:
         request_host = flow.request.host
         method = flow.request.method
         url = flow.request.url
+        response_body = flow.response.text
+        response_header = json.dumps(dict(flow.response.headers))
         status_code = flow.response.status_code
         spend_time = int((flow.response.timestamp_end - flow.request.timestamp_start) * 1000)
         response_size = len(flow.response.raw_content) if flow.response.raw_content else 0
         if not self.config:
             data = {"time": the_time, "url": url, "status_code": status_code,
-                    "method": method, "response_size": response_size, "spend_time": spend_time}
+                    "method": method, "response_size": response_size, "spend_time": spend_time,
+                    "response_body": response_body, "response_header": response_header}
             self.writer.writerow(data)
         else:
             for i in self.config:
                 if i in request_host:
                     data = {"url": url, "status_code": status_code,
-                            "method": method, "response_size": response_size, "spend_time": spend_time}
+                            "method": method, "response_size": response_size, "spend_time": spend_time,
+                            "response_body": response_body, "response_header": response_header}
                     self.writer.writerow(data)
 
     def done(self):
