@@ -107,7 +107,7 @@ def make_report():
             response_header = row["response_header"]
             if 'json' in str(response_header):
                 response = json.loads(row["response_body"])
-                if "code" in response.keys() and str(response["code"]) == "1001":
+                if "code" in response.keys() and str(response["code"]) != "1000":
                     code_result = True
                 else:
                     code_result = False
