@@ -12,7 +12,9 @@ import tkinter as tk
 import tkinter.messagebox as msgbox
 import os
 import time
+from moudle.utils import *
 
+PATH = os.path.dirname(os.path.abspath(__file__))
 package_name = None
 the_version_name = None
 device_info = None
@@ -33,24 +35,33 @@ def start_avg_time():
         # msgbox.showerror(title='启动失败', message='未填写应用包名')
         # return
         package_name = "com.yiding.jianhuo"
-        proxy_window_text.insert("end", "使用默认包名%s\n" % str(package_name))
+        window_text.insert("end", "使用默认包名%s\n" % str(package_name))
     if activity == "":
         # msgbox.showerror(title='启动失败', message='未填写启动页名称')
         # return
         activity = "com.yiding.jianhuo.SplashActivity"
-        proxy_window_text.insert("end", "使用默认启动页%s\n" % str(package_name))
+        window_text.insert("end", "使用默认启动页%s\n" % str(package_name))
     if the_run_time == "":
         the_run_time = 5
     if the_version_name == "":
         the_version_name = get_version_name_by_applicationid(package_name)
-    proxy_window_text.insert("end", "启动次数为: %s\n" % str(the_run_time))
-    proxy_window_text.insert("end", "请等待执行结束....\n")
+    window_text.insert("end", "启动次数为: %s\n" % str(the_run_time))
+    window_text.insert("end", "请等待执行结束....\n")
     ast = AppStart(the_version_name, package_name, activity, int(the_run_time))
     avg_start_time = ast.run()
     start_report = True
-    proxy_window_text.insert("end", "最快启动时间为: %s\n" % str(ast.fast))
-    proxy_window_text.insert("end", "最慢启动时间为: %s\n" % str(ast.slow))
-    proxy_window_text.insert("end", "平均启动时间为: %s\n" % str(avg_start_time))
+    window_text.insert("end", "最快启动时间为: %s\n" % str(ast.fast))
+    window_text.insert("end", "最慢启动时间为: %s\n" % str(ast.slow))
+    window_text.insert("end", "平均启动时间为: %s\n" % str(avg_start_time))
+    base_path = os.path.abspath(PATH + "/info/" + the_version_name)
+    data_base_path = os.path.abspath(base_path + "/start_stats")
+    make_dir(PATH + "/info")
+    make_dir(base_path)
+    make_dir(data_base_path)
+    writer = get_csv_writer(data_base_path + "/", "start",
+                            ["package_name", "start_activity", "run_time", 'avg_start_time'])
+    writer.writerow({"package_name": package_name, "start_activity": activity, "run_time": the_run_time,
+                     "avg_start_time": avg_start_time})
 
 
 def android_performance_begin():
