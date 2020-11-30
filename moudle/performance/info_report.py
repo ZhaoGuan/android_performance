@@ -26,51 +26,48 @@ template = """
 <body>
 <div>
     <table class="table table-bordered table-hover">
+        <th colspan="2" style="text-align:center;vertical-align:middle;">Android 性能测试报告</th>
         <tr>
             <th>包名</th>
-            <th>标签(版本号)</th>
-        </tr>
-
-        <tr>
             <td>{{ app.package_name }}</td>
+        </tr>
+        <tr class="start_report">
+            <th>启动页名</th>
+            <td>{{ start_data.start_activity }}</td>
+        </tr>
+        <tr>
+            <th>标签(版本号)</th>
             <td>{{ app.tag }}</td>
         </tr>
-    </table>
-    <table id="start_report" class="table table-bordered table-hover">
+         <th colspan="2" style="text-align:center;vertical-align:middle;">CPU测试结果</th>
         <tr>
-            <th>包名</th>
-            <th>启动页名</th>
-            <th>启动次数</th>
-            <th>平均启动时间</th>
+            <th>平均CPU使用率</th>
+            <td>{{ avg_cpu_data }}%</td>
         </tr>
-        
-        <tr>
-            <td>{{ start_data.package_name }}</td>
-            <td>{{ start_data.start_activity }}</td>
+        <th class="start_report" colspan="2" style="text-align:center;vertical-align:middle;">启动速率测试</th>
+        <tr class="start_report">
+            <th>启动次数</th>
             <td>{{ start_data.run_time }}</td>
+        </tr>
+        <tr class="start_report">
+            <th>平均启动时间</th>
             <td>{{ start_data.avg_start_time }}</td>
         </tr>
-    </table>
-    <table id="battery_report" class="table table-bordered table-hover">
-        <tr>
+        <th class="battery_report" colspan="2" style="text-align:center;vertical-align:middle;">电量消耗测试</th>
+        <tr class="battery_report">
             <th>耗电量</th>
-            <th>用时(秒)</th>
-            <th>平均消耗量</th>
-        </tr>
-
-        <tr>
             <td>{{ battery_stats }} mAH</td>
+        </tr>
+        <tr class="battery_report">
+            <th>用时(秒)</th>
             <td>{{ battery_time }} S</td>
+        </tr>
+        <tr class="battery_report">
+            <th>平均消耗量</th>
             <td>{{ avg_battery_stats }} mAH</td>
         </tr>
     </table>
 </div>
-<table class="table table-bordered table-hover">
-    <tr>
-        <td>平均CPU使用率</td>
-        <td>{{ avg_cpu_data }}%</td>
-    </tr>
-</table>
 <canvas id="cpuChart"></canvas>
 <canvas id="memoryChart"></canvas>
 <canvas id="fpsChart"></canvas>
@@ -83,8 +80,13 @@ template = """
     const memoryChart = document.getElementById('memoryChart');
     const fpsChart = document.getElementById('fpsChart');
     const netChart = document.getElementById('netChart');
-    document.getElementById('start_report').hidden = {{ show_start_report }};
-    document.getElementById('battery_report').hidden = {{ show_battery_report }};
+    for (const startIndex in startReport) {
+        startReport[startIndex].hidden = {{ show_start_report }};
+    }
+    const batteryReport = document.getElementsByClassName('battery_report')
+    for (const batteryIndex in batteryReport) {
+        batteryReport[batteryIndex].hidden = {{ show_battery_report }};
+    }
     cpuChart.height = wh / 4;
     memoryChart.height = wh / 4;
     fpsChart.height = wh / 4;
