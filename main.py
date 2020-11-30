@@ -53,15 +53,7 @@ def start_avg_time():
     window_text.insert("end", "最快启动时间为: %s\n" % str(ast.fast))
     window_text.insert("end", "最慢启动时间为: %s\n" % str(ast.slow))
     window_text.insert("end", "平均启动时间为: %s\n" % str(avg_start_time))
-    base_path = os.path.abspath(PATH + "/info/" + the_version_name)
-    data_base_path = os.path.abspath(base_path + "/start_stats")
-    make_dir(PATH + "/info")
-    make_dir(base_path)
-    make_dir(data_base_path)
-    writer = get_csv_writer(data_base_path + "/", "start",
-                            ["package_name", "start_activity", "run_time", 'avg_start_time'])
-    writer.writerow({"package_name": package_name, "start_activity": activity, "run_time": the_run_time,
-                     "avg_start_time": avg_start_time})
+
 
 
 def android_performance_begin():

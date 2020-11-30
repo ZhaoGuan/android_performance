@@ -55,14 +55,22 @@ template = """
         <tr>
             <th>耗电量</th>
             <th>用时(秒)</th>
+            <th>平均消耗量</th>
         </tr>
 
         <tr>
             <td>{{ battery_stats }} mAH</td>
             <td>{{ battery_time }} S</td>
+            <td>{{ avg_battery_stats }} mAH</td>
         </tr>
     </table>
 </div>
+<table class="table table-bordered table-hover">
+    <tr>
+        <td>平均CPU使用率</td>
+        <td>{{ avg_cpu_data }}%</td>
+    </tr>
+</table>
 <canvas id="cpuChart"></canvas>
 <canvas id="memoryChart"></canvas>
 <canvas id="fpsChart"></canvas>
@@ -275,11 +283,15 @@ def get_battery_data(battery_file):
         for row in data:
             battery_time = row["time"]
             battery_stats = row["battery(mAh)"]
+            if battery_stats is not None:
+                avg_battery_stats = format(float(battery_stats) / float(battery_time), '.2f')
+            else:
+                avg_battery_stats = None
         if battery_stats == "":
             show_battery_report = "true"
         else:
             show_battery_report = "false"
-    return battery_stats, battery_time, show_battery_report
+    return battery_stats, battery_time, avg_battery_stats, show_battery_report
 
 
 def get_start_data(start_file):
@@ -303,6 +315,7 @@ def info_report(app, show_start_report=True):
     file_path = new_dir(info_dir_path)
     cpu_file = new_file(file_path + "/cpu_stats/")
     cpu_time_labels, cpu_data = get_cpu_data(cpu_file)
+    avg_cpu_data = format(avg_cpu(file_path), ".2f")
     mem_file = new_file(file_path + "/mem_stats/")
     mem_time_labels, mem_data = get_mem_data(mem_file)
     fps_file = new_file(file_path + "/fps_stats/")
@@ -310,7 +323,7 @@ def info_report(app, show_start_report=True):
     net_file = new_file(file_path + "/net_stats/")
     net_time_labels, net_avg_down_data, net_avg_up_data, net_total_down_data, net_total_up_data = get_net_data(net_file)
     battery_file = new_file(file_path + "/battery_stats/")
-    battery_stats, battery_time, show_battery_report = get_battery_data(battery_file)
+    battery_stats, battery_time, avg_battery_stats, show_battery_report = get_battery_data(battery_file)
     try:
         start_file = new_file(file_path + "/start_stats/")
     except:
@@ -321,8 +334,9 @@ def info_report(app, show_start_report=True):
                            mem_data=mem_data, fps_time_labels=fps_time_labels, fps_data=fps_data,
                            net_total_down_data=net_total_down_data, net_total_up_data=net_total_up_data,
                            show_battery_report=show_battery_report, battery_time=battery_time,
-                           battery_stats=battery_stats, show_start_report=show_start_report,
-                           start_data=start_data)
+                           battery_stats=battery_stats, avg_battery_stats=avg_battery_stats,
+                           show_start_report=show_start_report,
+                           start_data=start_data, avg_cpu_data=avg_cpu_data)
     make_dir(report_dir_path)
     with open(report_dir_path + "/" + app["tag"] + "_" + str(int(time.time())) + "_report.html", "w") as f:
         f.write(result)
@@ -389,7 +403,7 @@ def avg_battery(base_path):
     avg_battery_list = []
     files = file_list(base_path + "/battery_stats/")
     for file in files:
-        battery_stats, battery_time, show_battery_report = get_battery_data(file)
+        battery_stats, battery_time, avg_battery_stats, show_battery_report = get_battery_data(file)
         if battery_stats != "":
             time_battery = float(battery_stats) / float(battery_time)
             avg_battery_list.append(time_battery)
