@@ -29,7 +29,7 @@ class AppStart:
 
     def stop_app(self):
         run_command('am force-stop ' + self.package_name)
-        time.sleep(1)
+        time.sleep(3)
 
     def run(self):
         for i in range(0, self.run_time):

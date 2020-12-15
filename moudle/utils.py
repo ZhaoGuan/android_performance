@@ -104,6 +104,10 @@ def get_version_name_by_applicationid(applicationid):
     return re.findall("\d+.+\d", version_info)[0]
 
 
+def get_devices_name():
+    return run_command("getprop ro.product.model")
+
+
 def run_proxy(port):
     script_path = os.path.abspath(PATH + "/../proxy/proxy_run.py")
     sys.argv = ["", "-p", str(port), "-s", script_path]

@@ -28,6 +28,10 @@ template = """
     <table class="table table-bordered table-hover">
         <th colspan="2" style="text-align:center;vertical-align:middle;">Android 性能测试报告</th>
         <tr>
+            <th>设备名称</th>
+            <td>{{ app.device }}</td>
+        </tr>
+        <tr>
             <th>包名</th>
             <td>{{ app.package_name }}</td>
         </tr>
@@ -80,6 +84,7 @@ template = """
     const memoryChart = document.getElementById('memoryChart');
     const fpsChart = document.getElementById('fpsChart');
     const netChart = document.getElementById('netChart');
+    const startReport = document.getElementsByClassName('start_report')
     for (const startIndex in startReport) {
         startReport[startIndex].hidden = {{ show_start_report }};
     }
@@ -285,7 +290,7 @@ def get_battery_data(battery_file):
         for row in data:
             battery_time = row["time"]
             battery_stats = row["battery(mAh)"]
-            if battery_stats is not None:
+            if battery_stats is not None and battery_stats != "":
                 avg_battery_stats = format(float(battery_stats) / float(battery_time), '.2f')
             else:
                 avg_battery_stats = None
