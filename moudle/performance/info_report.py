@@ -285,7 +285,7 @@ def get_battery_data(battery_file):
         for row in data:
             battery_time = row["time"]
             battery_stats = row["battery(mAh)"]
-            if battery_stats is not None:
+            if battery_stats is not None and battery_stats != "":
                 avg_battery_stats = format(float(battery_stats) / float(battery_time), '.2f')
             else:
                 avg_battery_stats = None
