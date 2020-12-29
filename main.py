@@ -17,6 +17,7 @@ from moudle.utils import *
 PATH = os.path.dirname(os.path.abspath(__file__))
 package_name = None
 the_version_name = None
+device_name = None
 device_info = None
 running = None
 port_entry = None
@@ -55,12 +56,15 @@ def start_avg_time():
     window_text.insert("end", "平均启动时间为: %s\n" % str(avg_start_time))
 
 
-
 def android_performance_begin():
     global package_name
     global the_version_name
+    global device_name
+    device_name = device_name_entry.get()
     package_name = package_name_entry.get()
     the_version_name = version_name.get()
+    if device_name == "":
+        device_name = get_devices_name()
     if package_name == "":
         # msgbox.showerror(title='启动失败', message='未填写应用包名')
         # return
@@ -89,7 +93,7 @@ def android_performance_end():
         window_text.insert('end', "关闭性能收集\n")
         time.sleep(5)
         running = None
-        info_report({"package_name": package_name, "tag": the_version_name}, start_report)
+        info_report({"package_name": package_name, "tag": the_version_name, "device": device_name}, start_report)
     else:
         window_text.insert('end', "未启动别瞎搞!\n")
 
@@ -199,22 +203,26 @@ if __name__ == "__main__":
     performance_frame_l.pack(side="left")
     performance_frame_r.pack(side="right")
     # 输入框
+    device_name = tk.Label(performance_frame_l, text="请输入设备名称:")
     p_label = tk.Label(performance_frame_l, text="请输入包名:")
     a_label = tk.Label(performance_frame_l, text="请输入启动页面名:")
     r_label = tk.Label(performance_frame_l, text="请输入要重复启动的次数:")
     v_label = tk.Label(performance_frame_l, text="请输入应用版本:")
     proxy_label = tk.Label(performance_frame_l, height=2, text="代理工具启动:")
+    device_name.pack()
     v_label.pack()
     p_label.pack()
     a_label.pack()
     r_label.pack()
     proxy_label.pack()
+    device_name_entry = tk.Entry(performance_frame_r)
     package_name_entry = tk.Entry(performance_frame_r)
     activity_entry = tk.Entry(performance_frame_r)
     run_time = tk.Entry(performance_frame_r)
     version_name = tk.Entry(performance_frame_r)
     proxy_button = tk.Button(performance_frame_r, text='启动', width=10,
                              height=2, command=proxy_top_level)
+    device_name_entry.pack()
     version_name.pack()
     package_name_entry.pack()
     activity_entry.pack()
