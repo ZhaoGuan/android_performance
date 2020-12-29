@@ -48,6 +48,11 @@ template = """
             <th>平均CPU使用率</th>
             <td>{{ avg_cpu_data }}%</td>
         </tr>
+         <th colspan="2" style="text-align:center;vertical-align:middle;">MEMORY测试结果</th>
+        <tr>
+            <th>平均MEMORY使用率</th>
+            <td>{{ avg_mem_data }}MB</td>
+        </tr>
         <th class="start_report" colspan="2" style="text-align:center;vertical-align:middle;">启动速率测试</th>
         <tr class="start_report">
             <th>启动次数</th>
@@ -323,6 +328,7 @@ def info_report(app, show_start_report=True):
     cpu_file = new_file(file_path + "/cpu_stats/")
     cpu_time_labels, cpu_data = get_cpu_data(cpu_file)
     avg_cpu_data = format(avg_cpu(file_path), ".2f")
+    avg_mem_data = format(avg_mem(file_path), ".2f")
     mem_file = new_file(file_path + "/mem_stats/")
     mem_time_labels, mem_data = get_mem_data(mem_file)
     fps_file = new_file(file_path + "/fps_stats/")
@@ -343,7 +349,7 @@ def info_report(app, show_start_report=True):
                            show_battery_report=show_battery_report, battery_time=battery_time,
                            battery_stats=battery_stats, avg_battery_stats=avg_battery_stats,
                            show_start_report=show_start_report,
-                           start_data=start_data, avg_cpu_data=avg_cpu_data)
+                           start_data=start_data, avg_cpu_data=avg_cpu_data, avg_mem_data=avg_mem_data)
     make_dir(report_dir_path)
     with open(report_dir_path + "/" + app["tag"] + "_" + str(int(time.time())) + "_report.html", "w") as f:
         f.write(result)
@@ -364,7 +370,7 @@ def avg_mem(base_path):
     mem_avg_data_list = []
     for file in files:
         mem_time_labels, mem_data = get_mem_data(file)
-        mem_data = nu.average([float(data) for data in mem_data])
+        mem_data = nu.average([float(data) for data in mem_data[10:]])
         mem_avg_data_list.append(mem_data)
     return nu.average(mem_avg_data_list)
 
