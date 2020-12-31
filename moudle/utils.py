@@ -1,11 +1,17 @@
+import multiprocessing
+
+multiprocessing.freeze_support()
 import csv
 import os
 import re
 import time
 import subprocess
+import sys
+from mitmproxy.tools.main import mitmweb
 
 the_time = time.time()
 MOUDLE_PATH = os.path.dirname(os.path.abspath(__file__))
+PATH = os.path.dirname(os.path.abspath(__file__))
 
 
 def make_dir(dirs):
@@ -23,9 +29,11 @@ def new_file(path):
 
 
 def file_list(path):
+    if path[-1] != "/":
+        path += "/"
     file_lists = os.listdir(path)
     file_lists.sort(key=lambda fn: os.path.getmtime(path + fn)
-    if not os.path.isdir(path + fn) else 0)
+    if not os.path.isdir(path + fn) else 0, reverse=False)
     file_lists = [path + file for file in file_lists]
     return file_lists
 
@@ -35,9 +43,11 @@ def new_dir(path):
 
 
 def dir_list(path):
+    if path[-1] != "/":
+        path += "/"
     dir_lists = os.listdir(path)
     dir_lists.sort(key=lambda fn: os.path.getmtime(path + fn)
-    if os.path.isdir(path + fn) else 0)
+    if os.path.isdir(path + fn) else 0, reverse=False)
     dir_lists = [path + the_dir for the_dir in dir_lists]
     return dir_lists
 
@@ -92,3 +102,21 @@ def get_pid_by_applicationid(applicationid):
 def get_version_name_by_applicationid(applicationid):
     version_info = run_command("dumpsys package " + applicationid + " | grep versionName")
     return re.findall("\d+.+\d", version_info)[0]
+
+
+def get_devices_name():
+    return run_command("getprop ro.product.model")
+
+
+def run_proxy(port):
+    script_path = os.path.abspath(PATH + "/../proxy/proxy_run.py")
+    sys.argv = ["", "-p", str(port), "-s", script_path]
+    try:
+        multiprocessing.set_start_method("fork")
+    except:
+        pass
+    running = multiprocessing.Process(target=mitmweb)
+    running.daemon = True
+    running.start()
+    pid = running.pid
+    return running, pid

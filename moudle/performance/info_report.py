@@ -9,6 +9,8 @@ from moudle.utils import new_dir, new_file, make_dir, dir_list, file_list
 import numpy as nu
 
 PATH = os.path.dirname(os.path.abspath(__file__))
+info_dir_path = os.path.abspath(PATH + "/../../info/")
+report_dir_path = os.path.abspath(PATH + "/../../report/")
 template = """
 <!doctype html>
 <html>
@@ -24,40 +26,54 @@ template = """
 <body>
 <div>
     <table class="table table-bordered table-hover">
+        <th colspan="2" style="text-align:center;vertical-align:middle;">Android 性能测试报告</th>
+        <tr>
+            <th>设备名称</th>
+            <td>{{ app.device }}</td>
+        </tr>
         <tr>
             <th>包名</th>
-            <th>标签(版本号)</th>
-        </tr>
-
-        <tr>
             <td>{{ app.package_name }}</td>
+        </tr>
+        <tr class="start_report">
+            <th>启动页名</th>
+            <td>{{ start_data.start_activity }}</td>
+        </tr>
+        <tr>
+            <th>标签(版本号)</th>
             <td>{{ app.tag }}</td>
         </tr>
-    </table>
-    <table id="start_report" class="table table-bordered table-hover">
+         <th colspan="2" style="text-align:center;vertical-align:middle;">CPU测试结果</th>
         <tr>
-            <th>包名</th>
-            <th>启动页名</th>
-            <th>启动次数</th>
-            <th>平均启动时间</th>
+            <th>平均CPU使用率</th>
+            <td>{{ avg_cpu_data }}%</td>
         </tr>
-        
+         <th colspan="2" style="text-align:center;vertical-align:middle;">MEMORY测试结果</th>
         <tr>
-            <td>{{ start_data.package_name }}</td>
-            <td>{{ start_data.start_activity }}</td>
+            <th>平均MEMORY使用率</th>
+            <td>{{ avg_mem_data }}MB</td>
+        </tr>
+        <th class="start_report" colspan="2" style="text-align:center;vertical-align:middle;">启动速率测试</th>
+        <tr class="start_report">
+            <th>启动次数</th>
             <td>{{ start_data.run_time }}</td>
+        </tr>
+        <tr class="start_report">
+            <th>平均启动时间</th>
             <td>{{ start_data.avg_start_time }}</td>
         </tr>
-    </table>
-    <table id="battery_report" class="table table-bordered table-hover">
-        <tr>
+        <th class="battery_report" colspan="2" style="text-align:center;vertical-align:middle;">电量消耗测试</th>
+        <tr class="battery_report">
             <th>耗电量</th>
-            <th>用时(秒)</th>
-        </tr>
-
-        <tr>
             <td>{{ battery_stats }} mAH</td>
+        </tr>
+        <tr class="battery_report">
+            <th>用时(秒)</th>
             <td>{{ battery_time }} S</td>
+        </tr>
+        <tr class="battery_report">
+            <th>平均消耗量</th>
+            <td>{{ avg_battery_stats }} mAH</td>
         </tr>
     </table>
 </div>
@@ -73,8 +89,14 @@ template = """
     const memoryChart = document.getElementById('memoryChart');
     const fpsChart = document.getElementById('fpsChart');
     const netChart = document.getElementById('netChart');
-    document.getElementById('start_report').hidden = {{ show_start_report }};
-    document.getElementById('battery_report').hidden = {{ show_battery_report }};
+    const startReport = document.getElementsByClassName('start_report')
+    for (const startIndex in startReport) {
+        startReport[startIndex].hidden = {{ show_start_report }};
+    }
+    const batteryReport = document.getElementsByClassName('battery_report')
+    for (const batteryIndex in batteryReport) {
+        batteryReport[batteryIndex].hidden = {{ show_battery_report }};
+    }
     cpuChart.height = wh / 4;
     memoryChart.height = wh / 4;
     fpsChart.height = wh / 4;
@@ -273,11 +295,15 @@ def get_battery_data(battery_file):
         for row in data:
             battery_time = row["time"]
             battery_stats = row["battery(mAh)"]
+            if battery_stats is not None and battery_stats != "":
+                avg_battery_stats = format(float(battery_stats) / float(battery_time), '.2f')
+            else:
+                avg_battery_stats = None
         if battery_stats == "":
             show_battery_report = "true"
         else:
             show_battery_report = "false"
-    return battery_stats, battery_time, show_battery_report
+    return battery_stats, battery_time, avg_battery_stats, show_battery_report
 
 
 def get_start_data(start_file):
@@ -298,9 +324,11 @@ def info_report(app, show_start_report=True):
         show_start_report = "false"
     else:
         show_start_report = "true"
-    file_path = new_dir(PATH + "/../info/")
+    file_path = new_dir(info_dir_path)
     cpu_file = new_file(file_path + "/cpu_stats/")
     cpu_time_labels, cpu_data = get_cpu_data(cpu_file)
+    avg_cpu_data = format(avg_cpu(file_path), ".2f")
+    avg_mem_data = format(avg_mem(file_path), ".2f")
     mem_file = new_file(file_path + "/mem_stats/")
     mem_time_labels, mem_data = get_mem_data(mem_file)
     fps_file = new_file(file_path + "/fps_stats/")
@@ -308,7 +336,7 @@ def info_report(app, show_start_report=True):
     net_file = new_file(file_path + "/net_stats/")
     net_time_labels, net_avg_down_data, net_avg_up_data, net_total_down_data, net_total_up_data = get_net_data(net_file)
     battery_file = new_file(file_path + "/battery_stats/")
-    battery_stats, battery_time, show_battery_report = get_battery_data(battery_file)
+    battery_stats, battery_time, avg_battery_stats, show_battery_report = get_battery_data(battery_file)
     try:
         start_file = new_file(file_path + "/start_stats/")
     except:
@@ -319,10 +347,11 @@ def info_report(app, show_start_report=True):
                            mem_data=mem_data, fps_time_labels=fps_time_labels, fps_data=fps_data,
                            net_total_down_data=net_total_down_data, net_total_up_data=net_total_up_data,
                            show_battery_report=show_battery_report, battery_time=battery_time,
-                           battery_stats=battery_stats, show_start_report=show_start_report,
-                           start_data=start_data)
-    make_dir(PATH + "/../report/")
-    with open(PATH + "/../report/" + app["tag"] + "_" + str(int(time.time())) + "_report.html", "w") as f:
+                           battery_stats=battery_stats, avg_battery_stats=avg_battery_stats,
+                           show_start_report=show_start_report,
+                           start_data=start_data, avg_cpu_data=avg_cpu_data, avg_mem_data=avg_mem_data)
+    make_dir(report_dir_path)
+    with open(report_dir_path + "/" + app["tag"] + "_" + str(int(time.time())) + "_report.html", "w") as f:
         f.write(result)
 
 
@@ -341,7 +370,7 @@ def avg_mem(base_path):
     mem_avg_data_list = []
     for file in files:
         mem_time_labels, mem_data = get_mem_data(file)
-        mem_data = nu.average([float(data) for data in mem_data])
+        mem_data = nu.average([float(data) for data in mem_data[10:]])
         mem_avg_data_list.append(mem_data)
     return nu.average(mem_avg_data_list)
 
@@ -387,7 +416,7 @@ def avg_battery(base_path):
     avg_battery_list = []
     files = file_list(base_path + "/battery_stats/")
     for file in files:
-        battery_stats, battery_time, show_battery_report = get_battery_data(file)
+        battery_stats, battery_time, avg_battery_stats, show_battery_report = get_battery_data(file)
         if battery_stats != "":
             time_battery = float(battery_stats) / float(battery_time)
             avg_battery_list.append(time_battery)
@@ -406,7 +435,7 @@ def tag_info_data(tag_dir_path):
 
 def diff_report(path_list=None):
     if path_list is None:
-        the_dif_list = dir_list(PATH + "/../info/")
+        the_dif_list = dir_list(info_dir_path)
         path_list = the_dif_list[-2:]
     name_list = []
     data_list = []
@@ -417,8 +446,8 @@ def diff_report(path_list=None):
         name_list.append(name)
     report = Template(diff_template)
     result = report.render(data_list=data_list)
-    make_dir(PATH + "/../report/")
+    make_dir(report_dir_path)
     base_name = "_".join(name_list)
-    with open(PATH + "/../report/" + base_name + "_" + str(int(time.time())) + "_report.html",
+    with open(report_dir_path + "/" + base_name + "_" + str(int(time.time())) + "_report.html",
               "w") as f:
         f.write(result)
