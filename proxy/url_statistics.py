@@ -102,14 +102,16 @@ def make_report():
     with open(new_path)as f:
         data = csv.DictReader(f)
         for row in data:
-            print(row)
             status_code = row["status_code"]
             response_header = row["response_header"]
             if 'json' in str(response_header):
-                response = json.loads(row["response_body"])
-                if "code" in response.keys() and str(response["code"]) != "1000":
-                    code_result = True
-                else:
+                try:
+                    response = json.loads(row["response_body"])
+                    if "code" in response.keys() and str(response["code"]) != "1000":
+                        code_result = True
+                    else:
+                        code_result = False
+                except:
                     code_result = False
             else:
                 code_result = False
@@ -153,8 +155,12 @@ class UrlStatistics:
         request_host = flow.request.host
         method = flow.request.method
         url = flow.request.url
-        response_body = flow.response.text
-        response_header = json.dumps(dict(flow.response.headers))
+        dict_response_header = dict(flow.response.headers)
+        if "Content-Type" in dict_response_header.keys() and "json" in dict(flow.response.headers)['Content-Type']:
+            response_body = flow.response.text
+        else:
+            response_body = None
+        response_header = json.dumps(dict_response_header)
         status_code = flow.response.status_code
         spend_time = int((flow.response.timestamp_end - flow.request.timestamp_start) * 1000)
         response_size = len(flow.response.raw_content) if flow.response.raw_content else 0
@@ -171,9 +177,10 @@ class UrlStatistics:
                             "response_body": response_body, "response_header": response_header}
                     self.writer.writerow(data)
 
-    def done(self):
-        self.f.close()
-        make_report()
+
+def done(self):
+    self.f.close()
+    make_report()
 
 
 if __name__ == "__main__":
