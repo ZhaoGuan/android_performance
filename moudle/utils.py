@@ -32,7 +32,7 @@ def file_list(path):
     if path[-1] != "/":
         path += "/"
     file_lists = os.listdir(path)
-    file_lists.sort(key=lambda fn: os.path.getmtime(path + fn)
+    file_lists.sort(key=lambda fn: os.path.getctime(path + fn)
     if not os.path.isdir(path + fn) else 0, reverse=False)
     file_lists = [path + file for file in file_lists]
     return file_lists

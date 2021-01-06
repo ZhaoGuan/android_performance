@@ -326,6 +326,7 @@ def info_report(app, show_start_report=True):
         show_start_report = "true"
     file_path = new_dir(info_dir_path)
     cpu_file = new_file(file_path + "/cpu_stats/")
+    print(cpu_file)
     cpu_time_labels, cpu_data = get_cpu_data(cpu_file)
     avg_cpu_data = format(avg_cpu(file_path), ".2f")
     avg_mem_data = format(avg_mem(file_path), ".2f")
