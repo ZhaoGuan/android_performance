@@ -219,7 +219,11 @@ def upload_avg_data():
     if avg_cpu is False:
         window_text.insert('end', "未发现性能数据\n")
         return
-    db.insert_data(app, avg_cpu, avg_mem, avg_battery, avg_start_app)
+    result = db.insert_data(app, avg_cpu, avg_mem, avg_battery, avg_start_app)
+    if result:
+        window_text.insert('end', "性能数据上传成功\n")
+    else:
+        window_text.insert('end', "性能数据上传失败\n")
 
 
 if __name__ == "__main__":
