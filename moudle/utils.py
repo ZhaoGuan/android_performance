@@ -7,11 +7,19 @@ import re
 import time
 import subprocess
 import sys
+import yaml
 from mitmproxy.tools.main import mitmweb
 
 the_time = time.time()
 MOUDLE_PATH = os.path.dirname(os.path.abspath(__file__))
 PATH = os.path.dirname(os.path.abspath(__file__))
+
+
+def config_reader(yaml_file):
+    yf = open(yaml_file)
+    yx = yaml.safe_load(yf)
+    yf.close()
+    return yx
 
 
 def make_dir(dirs):

@@ -60,7 +60,7 @@ template = """
         </tr>
         <tr class="start_report">
             <th>平均启动时间</th>
-            <td>{{ start_data.avg_start_time }}</td>
+            <td>{{ start_data.avg_start_time }} ms</td>
         </tr>
         <th class="battery_report" colspan="2" style="text-align:center;vertical-align:middle;">电量消耗测试</th>
         <tr class="battery_report">
@@ -319,6 +319,19 @@ def get_start_data(start_file):
     return start_data
 
 
+def avg_data(app):
+    file_path = new_dir(info_dir_path)
+    avg_cpu_data = format(avg_cpu(file_path), ".2f")
+    avg_mem_data = format(avg_mem(file_path), ".2f")
+    battery_file = new_file(file_path + "/battery_stats/")
+    battery_stats, battery_time, avg_battery_stats, show_battery_report = get_battery_data(battery_file)
+    try:
+        start_file = new_file(file_path + "/start_stats/")
+    except:
+        start_file = False
+    start_data = get_start_data(start_file)
+
+
 def info_report(app, show_start_report=True):
     if show_start_report:
         show_start_report = "false"
@@ -326,7 +339,6 @@ def info_report(app, show_start_report=True):
         show_start_report = "true"
     file_path = new_dir(info_dir_path)
     cpu_file = new_file(file_path + "/cpu_stats/")
-    print(cpu_file)
     cpu_time_labels, cpu_data = get_cpu_data(cpu_file)
     avg_cpu_data = format(avg_cpu(file_path), ".2f")
     avg_mem_data = format(avg_mem(file_path), ".2f")
