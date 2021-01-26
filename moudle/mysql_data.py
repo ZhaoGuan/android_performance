@@ -2,10 +2,16 @@
 # -*- coding: utf-8 -*-
 # __author__ = 'Gz'
 import pymysql
+import os
+from moudle.utils import config_reader
+
+PATH = os.path.dirname(os.path.abspath(__file__))
+config_path = os.path.abspath(PATH + "/..") + "/mysql_config.yml"
 
 
 class DataBase:
-    def __init__(self, QA_DB_CONFIG):
+    def __init__(self):
+        QA_DB_CONFIG = config_reader(config_path)
         ip = QA_DB_CONFIG["ip"]
         user = QA_DB_CONFIG["user"]
         password = QA_DB_CONFIG["password"]
@@ -16,18 +22,16 @@ class DataBase:
         self.create_table()
 
     def create_table(self):
-        sql = '''
-        CREATE TABLE `android_performance` (
+        sql = '''CREATE TABLE `android_performance` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `tag` varchar(11) DEFAULT NULL,
   `avg_cpu` float DEFAULT NULL,
   `avg_mem` float DEFAULT NULL,
   `avg_battery` float DEFAULT NULL,
-  `start_time` float DEFAULT NULL,
-  `upload_date` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  `avg_start_app` float DEFAULT NULL,
+  `upload_date` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-        '''
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4;'''
         try:
             # 执行sql语句
             self.cursor.execute(sql)
@@ -38,9 +42,15 @@ class DataBase:
             # 发生错误时回滚
             self.db.rollback()
 
-    def insert_data(self, tag, avg_cpu, avg_mem, avg_battery, avg_start_app):
-        sql = "INSERT INTO android_performance(tag,avg_cpu,avg_mem,avg_battery,avg_start_app) " \
-              "VALUES ('%s',%s,%s,%s,%s)" % (tag, avg_cpu, avg_mem, avg_battery, avg_start_app)
+    def insert_data(self, app, avg_cpu, avg_mem, avg_battery, avg_start_app):
+        '''{'package_name': 'com.yiding.jianhuo', 'tag': '3.6.5', 'device': 'CLT-AL00'}'''
+        tag = app["tag"]
+        package_name = app['package_name']
+        device = app['device']
+        sql = "INSERT INTO android_performance(tag,avg_cpu,avg_mem,avg_battery,avg_start_app,package_name,device) " \
+              "VALUES ('%s',%s,%s,%s,%s,'%s','%s')" \
+              % (tag, avg_cpu, avg_mem, avg_battery, avg_start_app, package_name, device)
+        print(sql)
         try:
             # 执行sql语句
             self.cursor.execute(sql)

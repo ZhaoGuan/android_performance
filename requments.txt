@@ -25,6 +25,7 @@ publicsuffix2==2.20191221
 pyaml==20.4.0
 pyasn1==0.4.8
 pycparser==2.20
+PyMySQL==1.0.2
 pyOpenSSL==20.0.1
 pyparsing==2.4.7
 pyperclip==1.8.1

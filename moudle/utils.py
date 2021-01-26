@@ -113,7 +113,7 @@ def get_version_name_by_applicationid(applicationid):
 
 
 def get_devices_name():
-    return run_command("getprop ro.product.model")
+    return run_command("getprop ro.product.model").replace("\n", "")
 
 
 def run_proxy(port):

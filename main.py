@@ -5,7 +5,7 @@ import multiprocessing
 
 multiprocessing.freeze_support()
 from moudle.performance.device_info import DeviceInfoRun, app_pid
-from moudle.performance.info_report import info_report, diff_report
+from moudle.performance.info_report import info_report, diff_report, avg_data
 from moudle.performance.app_start_info import AppStart
 from moudle.utils import get_version_name_by_applicationid, dir_list, MOUDLE_PATH, run_proxy
 import tkinter as tk
@@ -25,31 +25,51 @@ port_entry = None
 proxy_window_text = None
 
 
+def base_config():
+    package_name = package_name_entry.get()
+    activity = activity_entry.get()
+    the_version_name = version_name.get()
+    device_name = device_name_entry.get()
+    if device_name == "":
+        device_name = get_devices_name()
+        window_text.insert("end", "获取设备名称:%s\n" % str(device_name))
+    else:
+        window_text.insert("end", "设备名称:%s\n" % str(device_name))
+    if package_name == "":
+        # msgbox.showerror(title='启动失败', message='未填写应用包名')
+        # return
+        package_name = "com.yiding.jianhuo"
+        window_text.insert("end", "使用默认包名:%s\n" % str(package_name))
+    else:
+        window_text.insert("end", "包名:%s\n" % str(package_name))
+    if activity == "":
+        # msgbox.showerror(title='启动失败', message='未填写启动页名称')
+        # return
+        activity = "com.yiding.jianhuo.SplashActivity"
+        window_text.insert("end", "使用默认启动页:%s\n" % str(activity))
+    else:
+        window_text.insert("end", "启动页:%s\n" % str(activity))
+    if the_version_name == "":
+        the_version_name = get_version_name_by_applicationid(package_name)
+        window_text.insert("end", "自动获取版本号:%s\n" % str(the_version_name))
+    else:
+        window_text.insert("end", "版本号:%s\n" % str(the_version_name))
+    return package_name, activity, the_version_name, device_name
+
+
 def start_avg_time():
     global package_name
     global the_version_name
     global start_report
     package_name = package_name_entry.get()
-    activity = activity_entry.get()
     the_run_time = run_time.get()
     the_version_name = version_name.get()
     if the_run_time != "" and int(the_run_time) < 2:
         window_text.insert("end", "启动次数要大于1")
         return
-    if package_name == "":
-        # msgbox.showerror(title='启动失败', message='未填写应用包名')
-        # return
-        package_name = "com.yiding.jianhuo"
-        window_text.insert("end", "使用默认包名%s\n" % str(package_name))
-    if activity == "":
-        # msgbox.showerror(title='启动失败', message='未填写启动页名称')
-        # return
-        activity = "com.yiding.jianhuo.SplashActivity"
-        window_text.insert("end", "使用默认启动页%s\n" % str(package_name))
     if the_run_time == "":
         the_run_time = 5
-    if the_version_name == "":
-        the_version_name = get_version_name_by_applicationid(package_name)
+    package_name, activity, the_version_name, device_name = base_config()
     window_text.insert("end", "启动次数为: %s\n" % str(the_run_time))
     window_text.insert("end", "请等待执行结束....\n")
     ast = AppStart(the_version_name, package_name, activity, int(the_run_time))
@@ -64,16 +84,7 @@ def android_performance_begin():
     global package_name
     global the_version_name
     global device_name
-    device_name = device_name_entry.get()
-    package_name = package_name_entry.get()
-    the_version_name = version_name.get()
-    if device_name == "":
-        device_name = get_devices_name()
-    if package_name == "":
-        # msgbox.showerror(title='启动失败', message='未填写应用包名')
-        # return
-        package_name = "com.yiding.jianhuo"
-        window_text.insert("end", "使用默认包名%s\n" % str(package_name))
+    package_name, activity, the_version_name, device_name = base_config()
     pid = app_pid(package_name)
     window_text.insert("end", package_name + "\n")
     window_text.insert("end", pid + "\n")
@@ -192,17 +203,23 @@ def proxy_top_level():
 
 
 def mysql_config():
-    config_path = PATH + "/mysql_config.yml"
-    config_data = config_reader(config_path)
-    if "ip" in config_data and "user" in config_data and "password" in config_data and "database" in config_data:
-        try:
-            db = DataBase(config_data)
-            return db
-        except Exception as e:
-            print("数据库错误:" + str(e))
-            return False
-    else:
+    try:
+        db = DataBase()
+        return db
+    except Exception as e:
+        print("数据库错误:" + str(e))
         return False
+
+
+def upload_avg_data():
+    package_name, activity, the_version_name, device_name = base_config()
+    app = {"package_name": package_name, "tag": the_version_name, "device": device_name}
+    db = DataBase()
+    avg_cpu, avg_mem, avg_battery, avg_start_app = avg_data()
+    if avg_cpu is False:
+        window_text.insert('end', "未发现性能数据\n")
+        return
+    db.insert_data(app, avg_cpu, avg_mem, avg_battery, avg_start_app)
 
 
 if __name__ == "__main__":
@@ -286,7 +303,7 @@ if __name__ == "__main__":
         mysql_frame.pack()
         mysql_label = tk.Label(mysql_frame, text='上传性能平均值至MYSQL数据库')
         mysql_button = tk.Button(mysql_frame, text="上传", width=10,
-                                 height=2, )
+                                 height=2, command=upload_avg_data)
         mysql_label.pack(side="left")
         mysql_button.pack(side="right")
     # 代理工具

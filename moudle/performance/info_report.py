@@ -299,11 +299,13 @@ def get_battery_data(battery_file):
                 avg_battery_stats = format(float(battery_stats) / float(battery_time), '.2f')
             else:
                 avg_battery_stats = None
+        print(battery_stats)
         if battery_stats == "":
             show_battery_report = "true"
+            return 0, 0, 0, show_battery_report
         else:
             show_battery_report = "false"
-    return battery_stats, format(float(battery_time), '.2f'), avg_battery_stats, show_battery_report
+            return battery_stats, format(float(battery_time), '.2f'), avg_battery_stats, show_battery_report
 
 
 def get_start_data(start_file):
@@ -319,8 +321,11 @@ def get_start_data(start_file):
     return start_data
 
 
-def avg_data(app):
-    file_path = new_dir(info_dir_path)
+def avg_data():
+    try:
+        file_path = new_dir(info_dir_path)
+    except:
+        return False, False, False, False
     avg_cpu_data = format(avg_cpu(file_path), ".2f")
     avg_mem_data = format(avg_mem(file_path), ".2f")
     battery_file = new_file(file_path + "/battery_stats/")
@@ -330,6 +335,7 @@ def avg_data(app):
     except:
         start_file = False
     start_data = get_start_data(start_file)
+    return avg_cpu_data, avg_mem_data, avg_battery_stats, start_data["avg_start_time"]
 
 
 def info_report(app, show_start_report=True):
@@ -459,4 +465,6 @@ def diff_report(path_list=None):
 
 
 if __name__ == "__main__":
-    info_report({"package_name": "3.6.3", "tag": "3.6.3", "device": "华为"})
+    # info_report({"package_name": "3.6.3", "tag": "3.6.3", "device": "华为"})
+    a = avg_data("3.6.3")
+    print(a)
