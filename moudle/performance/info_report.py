@@ -60,7 +60,7 @@ template = """
         </tr>
         <tr class="start_report">
             <th>平均启动时间</th>
-            <td>{{ start_data.avg_start_time }}</td>
+            <td>{{ start_data.avg_start_time }} ms</td>
         </tr>
         <th class="battery_report" colspan="2" style="text-align:center;vertical-align:middle;">电量消耗测试</th>
         <tr class="battery_report">
@@ -301,9 +301,10 @@ def get_battery_data(battery_file):
                 avg_battery_stats = None
         if battery_stats == "":
             show_battery_report = "true"
+            return 0, 0, 0, show_battery_report
         else:
             show_battery_report = "false"
-    return battery_stats, battery_time, avg_battery_stats, show_battery_report
+            return battery_stats, format(float(battery_time), '.2f'), avg_battery_stats, show_battery_report
 
 
 def get_start_data(start_file):
@@ -317,6 +318,23 @@ def get_start_data(start_file):
     except:
         start_data = {}
     return start_data
+
+
+def avg_data():
+    try:
+        file_path = new_dir(info_dir_path)
+    except:
+        return False, False, False, False, False, False
+    avg_cpu_data = format(avg_cpu(file_path), ".2f")
+    avg_mem_data = format(avg_mem(file_path), ".2f")
+    battery_file = new_file(file_path + "/battery_stats/")
+    battery_stats, battery_time, avg_battery_stats, show_battery_report = get_battery_data(battery_file)
+    try:
+        start_file = new_file(file_path + "/start_stats/")
+    except:
+        start_file = False
+    start_data = get_start_data(start_file)
+    return avg_cpu_data, avg_mem_data, battery_stats, battery_time, avg_battery_stats, start_data["avg_start_time"]
 
 
 def info_report(app, show_start_report=True):
@@ -357,46 +375,38 @@ def info_report(app, show_start_report=True):
 
 def avg_cpu(base_path):
     files = file_list(base_path + "/cpu_stats/")
-    cpu_avg_data_list = []
-    for file in files:
-        cpu_time_labels, cpu_data = get_cpu_data(file)
-        cpu_data = nu.average([float(data) for data in cpu_data])
-        cpu_avg_data_list.append(cpu_data)
-    return nu.average(cpu_avg_data_list)
+    file = files[0]
+    cpu_time_labels, cpu_data = get_cpu_data(file)
+    return nu.average([float(data) for data in cpu_data])
 
 
 def avg_mem(base_path):
     files = file_list(base_path + "/mem_stats/")
-    mem_avg_data_list = []
-    for file in files:
-        mem_time_labels, mem_data = get_mem_data(file)
+    file = files[0]
+    mem_time_labels, mem_data = get_mem_data(file)
+    if len(mem_data) > 20:
         mem_data = nu.average([float(data) for data in mem_data[10:]])
-        mem_avg_data_list.append(mem_data)
-    return nu.average(mem_avg_data_list)
+    else:
+        mem_data = nu.average([float(data) for data in mem_data])
+    return mem_data
 
 
 def avg_fps(base_path):
     files = file_list(base_path + "/fps_stats/")
-    fps_avg_data_list = []
-    for file in files:
-        fps_time_labels, fps_data = get_fps_data(file)
-        fps_data = nu.average([float(data) for data in fps_data])
-        fps_avg_data_list.append(fps_data)
-    return nu.average(fps_avg_data_list)
+    file = files[0]
+    fps_time_labels, fps_data = get_fps_data(file)
+    fps_data = nu.average([float(data) for data in fps_data])
+    return nu.average([float(data) for data in fps_data])
 
 
 def avg_net(base_path):
     files = file_list(base_path + "/net_stats/")
-    down_avg_data_list = []
-    up_avg_data_list = []
-    for file in files:
-        net_time_labels, net_avg_down_data, net_avg_up_data, net_total_down_data, net_total_up_data = get_net_data(
-            file)
-        net_total_down_data = nu.average([float(data) for data in net_total_down_data])
-        net_total_up_data = nu.average([float(data) for data in net_total_up_data])
-        down_avg_data_list.append(net_total_down_data)
-        up_avg_data_list.append(net_total_up_data)
-    return nu.average(down_avg_data_list), nu.average(up_avg_data_list)
+    file = files[0]
+    net_time_labels, net_avg_down_data, net_avg_up_data, net_total_down_data, net_total_up_data = get_net_data(
+        file)
+    net_total_down_data = nu.average([float(data) for data in net_total_down_data])
+    net_total_up_data = nu.average([float(data) for data in net_total_up_data])
+    return net_total_down_data, net_total_up_data
 
 
 def avg_start(base_path):
@@ -404,9 +414,9 @@ def avg_start(base_path):
     avg_start_list = []
     if os.path.exists(path):
         files = file_list(path)
-        for file in files:
-            data = get_start_data(file)
-            avg_start_list.append(int(data["avg_start_time"]))
+        file = files[0]
+        data = get_start_data(file)
+        avg_start_list.append(int(data["avg_start_time"]))
         return nu.average(avg_start_list)
     else:
         return None
@@ -415,13 +425,13 @@ def avg_start(base_path):
 def avg_battery(base_path):
     avg_battery_list = []
     files = file_list(base_path + "/battery_stats/")
-    for file in files:
-        battery_stats, battery_time, avg_battery_stats, show_battery_report = get_battery_data(file)
-        if battery_stats != "":
-            time_battery = float(battery_stats) / float(battery_time)
-            avg_battery_list.append(time_battery)
-        else:
-            avg_battery_list.append(0)
+    file = files[0]
+    battery_stats, battery_time, avg_battery_stats, show_battery_report = get_battery_data(file)
+    if battery_stats != "":
+        time_battery = float(battery_stats) / float(battery_time)
+        avg_battery_list.append(time_battery)
+    else:
+        avg_battery_list.append(0)
     return nu.average(avg_battery_list)
 
 
@@ -451,3 +461,9 @@ def diff_report(path_list=None):
     with open(report_dir_path + "/" + base_name + "_" + str(int(time.time())) + "_report.html",
               "w") as f:
         f.write(result)
+
+
+if __name__ == "__main__":
+    # info_report({"package_name": "3.6.3", "tag": "3.6.3", "device": "华为"})
+    a = avg_data("3.6.3")
+    print(a)

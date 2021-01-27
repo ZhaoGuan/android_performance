@@ -5,7 +5,7 @@ import multiprocessing
 
 multiprocessing.freeze_support()
 from moudle.performance.device_info import DeviceInfoRun, app_pid
-from moudle.performance.info_report import info_report, diff_report
+from moudle.performance.info_report import info_report, diff_report, avg_data
 from moudle.performance.app_start_info import AppStart
 from moudle.utils import get_version_name_by_applicationid, dir_list, MOUDLE_PATH, run_proxy
 import tkinter as tk
@@ -13,6 +13,7 @@ import tkinter.messagebox as msgbox
 import os
 import time
 from moudle.utils import *
+from moudle.mysql_data import DataBase
 
 PATH = os.path.dirname(os.path.abspath(__file__))
 package_name = None
@@ -24,28 +25,51 @@ port_entry = None
 proxy_window_text = None
 
 
+def base_config():
+    package_name = package_name_entry.get()
+    activity = activity_entry.get()
+    the_version_name = version_name.get()
+    device_name = device_name_entry.get()
+    if device_name == "":
+        device_name = get_devices_name()
+        window_text.insert("end", "获取设备名称:%s\n" % str(device_name))
+    else:
+        window_text.insert("end", "设备名称:%s\n" % str(device_name))
+    if package_name == "":
+        # msgbox.showerror(title='启动失败', message='未填写应用包名')
+        # return
+        package_name = "com.yiding.jianhuo"
+        window_text.insert("end", "使用默认包名:%s\n" % str(package_name))
+    else:
+        window_text.insert("end", "包名:%s\n" % str(package_name))
+    if activity == "":
+        # msgbox.showerror(title='启动失败', message='未填写启动页名称')
+        # return
+        activity = "com.yiding.jianhuo.SplashActivity"
+        window_text.insert("end", "使用默认启动页:%s\n" % str(activity))
+    else:
+        window_text.insert("end", "启动页:%s\n" % str(activity))
+    if the_version_name == "":
+        the_version_name = get_version_name_by_applicationid(package_name)
+        window_text.insert("end", "自动获取版本号:%s\n" % str(the_version_name))
+    else:
+        window_text.insert("end", "版本号:%s\n" % str(the_version_name))
+    return package_name, activity, the_version_name, device_name
+
+
 def start_avg_time():
     global package_name
     global the_version_name
     global start_report
     package_name = package_name_entry.get()
-    activity = activity_entry.get()
     the_run_time = run_time.get()
     the_version_name = version_name.get()
-    if package_name == "":
-        # msgbox.showerror(title='启动失败', message='未填写应用包名')
-        # return
-        package_name = "com.yiding.jianhuo"
-        window_text.insert("end", "使用默认包名%s\n" % str(package_name))
-    if activity == "":
-        # msgbox.showerror(title='启动失败', message='未填写启动页名称')
-        # return
-        activity = "com.yiding.jianhuo.SplashActivity"
-        window_text.insert("end", "使用默认启动页%s\n" % str(package_name))
+    if the_run_time != "" and int(the_run_time) < 2:
+        window_text.insert("end", "启动次数要大于1")
+        return
     if the_run_time == "":
         the_run_time = 5
-    if the_version_name == "":
-        the_version_name = get_version_name_by_applicationid(package_name)
+    package_name, activity, the_version_name, device_name = base_config()
     window_text.insert("end", "启动次数为: %s\n" % str(the_run_time))
     window_text.insert("end", "请等待执行结束....\n")
     ast = AppStart(the_version_name, package_name, activity, int(the_run_time))
@@ -60,16 +84,7 @@ def android_performance_begin():
     global package_name
     global the_version_name
     global device_name
-    device_name = device_name_entry.get()
-    package_name = package_name_entry.get()
-    the_version_name = version_name.get()
-    if device_name == "":
-        device_name = get_devices_name()
-    if package_name == "":
-        # msgbox.showerror(title='启动失败', message='未填写应用包名')
-        # return
-        package_name = "com.yiding.jianhuo"
-        window_text.insert("end", "使用默认包名%s\n" % str(package_name))
+    package_name, activity, the_version_name, device_name = base_config()
     pid = app_pid(package_name)
     window_text.insert("end", package_name + "\n")
     window_text.insert("end", pid + "\n")
@@ -187,6 +202,31 @@ def proxy_top_level():
     proxy_window_text.pack()
 
 
+def mysql_config():
+    try:
+        db = DataBase()
+        return db
+    except Exception as e:
+        print("数据库错误:" + str(e))
+        return False
+
+
+def upload_avg_data():
+    package_name, activity, the_version_name, device_name = base_config()
+    app = {"package_name": package_name, "tag": the_version_name, "device": device_name}
+    db = DataBase()
+    avg_cpu_data, avg_mem_data, battery_stats, battery_time, avg_battery_stats, avg_start_app = avg_data()
+    if avg_cpu_data is False:
+        window_text.insert('end', "未发现性能数据\n")
+        return
+    result = db.insert_data(app, avg_cpu_data, avg_mem_data, battery_stats, battery_time, avg_battery_stats,
+                            avg_start_app)
+    if result:
+        window_text.insert('end', "性能数据上传成功\n")
+    else:
+        window_text.insert('end', "性能数据上传失败\n")
+
+
 if __name__ == "__main__":
     window = tk.Tk()
     window.title("Android性能收集")
@@ -196,38 +236,36 @@ if __name__ == "__main__":
                                               "adb tcpip 5555\n"
                                               "adb connect 设备的ip")
     performance_label.pack()
-    performance_master = tk.Frame()
-    performance_master.pack()
-    performance_frame_l = tk.Frame(performance_master)
-    performance_frame_r = tk.Frame(performance_master)
-    performance_frame_l.pack(side="left")
-    performance_frame_r.pack(side="right")
-    # 输入框
-    device_name = tk.Label(performance_frame_l, text="请输入设备名称:")
-    p_label = tk.Label(performance_frame_l, text="请输入包名:")
-    a_label = tk.Label(performance_frame_l, text="请输入启动页面名:")
-    r_label = tk.Label(performance_frame_l, text="请输入要重复启动的次数:")
-    v_label = tk.Label(performance_frame_l, text="请输入应用版本:")
-    proxy_label = tk.Label(performance_frame_l, height=2, text="代理工具启动:")
-    device_name.pack()
-    v_label.pack()
-    p_label.pack()
-    a_label.pack()
-    r_label.pack()
-    proxy_label.pack()
-    device_name_entry = tk.Entry(performance_frame_r)
-    package_name_entry = tk.Entry(performance_frame_r)
-    activity_entry = tk.Entry(performance_frame_r)
-    run_time = tk.Entry(performance_frame_r)
-    version_name = tk.Entry(performance_frame_r)
-    proxy_button = tk.Button(performance_frame_r, text='启动', width=10,
-                             height=2, command=proxy_top_level)
-    device_name_entry.pack()
-    version_name.pack()
-    package_name_entry.pack()
-    activity_entry.pack()
-    run_time.pack()
-    proxy_button.pack()
+    device_name_frame = tk.Frame()
+    device_name_frame.pack()
+    device_name = tk.Label(device_name_frame, text="请输入设备名称:")
+    device_name_entry = tk.Entry(device_name_frame)
+    device_name.pack(side="left")
+    device_name_entry.pack(side="right")
+    p_frame = tk.Frame()
+    p_frame.pack()
+    p_label = tk.Label(p_frame, text="请输入包名:")
+    package_name_entry = tk.Entry(p_frame)
+    p_label.pack(side="left")
+    package_name_entry.pack(side="right")
+    a_frame = tk.Frame()
+    a_frame.pack()
+    a_label = tk.Label(a_frame, text="请输入启动页面名:")
+    activity_entry = tk.Entry(a_frame)
+    a_label.pack(side="left")
+    activity_entry.pack(side="right")
+    r_frame = tk.Frame()
+    r_frame.pack()
+    r_label = tk.Label(r_frame, text="请输入要重复启动的次数:")
+    run_time = tk.Entry(r_frame)
+    r_label.pack(side="left")
+    run_time.pack(side="right")
+    v_frame = tk.Frame()
+    v_frame.pack()
+    v_label = tk.Label(v_frame, text="请输入应用版本:")
+    version_name = tk.Entry(v_frame)
+    v_label.pack(side="left")
+    version_name.pack(side="right")
     # 启动测试
     start_report = False
     run_performance_master_frame = tk.Frame()
@@ -264,7 +302,23 @@ if __name__ == "__main__":
     diff_button = tk.Button(diff_r_frame, text="启动", width=10,
                             height=2, command=android_performance_diff)
     diff_button.pack()
-
+    db = mysql_config()
+    if db:
+        mysql_frame = tk.Frame()
+        mysql_frame.pack()
+        mysql_label = tk.Label(mysql_frame, text='上传性能平均值至MYSQL数据库')
+        mysql_button = tk.Button(mysql_frame, text="上传", width=10,
+                                 height=2, command=upload_avg_data)
+        mysql_label.pack(side="left")
+        mysql_button.pack(side="right")
+    # 代理工具
+    p_frame = tk.Frame()
+    p_frame.pack()
+    proxy_label = tk.Label(p_frame, height=2, text="代理工具启动:")
+    proxy_button = tk.Button(p_frame, text='启动', width=10,
+                             height=2, command=proxy_top_level)
+    proxy_label.pack(side="left")
+    proxy_button.pack(side="right")
     window_text = tk.Text(window)
     window_text.pack()
 

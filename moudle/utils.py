@@ -7,11 +7,19 @@ import re
 import time
 import subprocess
 import sys
+import yaml
 from mitmproxy.tools.main import mitmweb
 
 the_time = time.time()
 MOUDLE_PATH = os.path.dirname(os.path.abspath(__file__))
 PATH = os.path.dirname(os.path.abspath(__file__))
+
+
+def config_reader(yaml_file):
+    yf = open(yaml_file)
+    yx = yaml.safe_load(yf)
+    yf.close()
+    return yx
 
 
 def make_dir(dirs):
@@ -32,7 +40,7 @@ def file_list(path):
     if path[-1] != "/":
         path += "/"
     file_lists = os.listdir(path)
-    file_lists.sort(key=lambda fn: os.path.getmtime(path + fn)
+    file_lists.sort(key=lambda fn: os.path.getctime(path + fn)
     if not os.path.isdir(path + fn) else 0, reverse=False)
     file_lists = [path + file for file in file_lists]
     return file_lists
@@ -105,7 +113,7 @@ def get_version_name_by_applicationid(applicationid):
 
 
 def get_devices_name():
-    return run_command("getprop ro.product.model")
+    return run_command("getprop ro.product.model").replace("\n", "")
 
 
 def run_proxy(port):
