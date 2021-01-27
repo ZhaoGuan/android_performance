@@ -65,13 +65,3 @@ class DataBase:
             # 发生错误时回滚
             self.db.rollback()
             return False
-
-
-if __name__ == "__main__":
-    QA_DB_CONFIG = {
-        "ip": "172.17.214.129",
-        "user": "root",
-        "password": "1qaz@WSX",
-        "database": "qa"
-    }
-    db = DataBase(QA_DB_CONFIG)

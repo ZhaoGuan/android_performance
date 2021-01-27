@@ -299,7 +299,6 @@ def get_battery_data(battery_file):
                 avg_battery_stats = format(float(battery_stats) / float(battery_time), '.2f')
             else:
                 avg_battery_stats = None
-        print(battery_stats)
         if battery_stats == "":
             show_battery_report = "true"
             return 0, 0, 0, show_battery_report
