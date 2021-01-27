@@ -325,7 +325,7 @@ def avg_data():
     try:
         file_path = new_dir(info_dir_path)
     except:
-        return False, False, False, False
+        return False, False, False, False, False, False
     avg_cpu_data = format(avg_cpu(file_path), ".2f")
     avg_mem_data = format(avg_mem(file_path), ".2f")
     battery_file = new_file(file_path + "/battery_stats/")
@@ -335,7 +335,7 @@ def avg_data():
     except:
         start_file = False
     start_data = get_start_data(start_file)
-    return avg_cpu_data, avg_mem_data, avg_battery_stats, start_data["avg_start_time"]
+    return avg_cpu_data, avg_mem_data, battery_stats, battery_time, avg_battery_stats, start_data["avg_start_time"]
 
 
 def info_report(app, show_start_report=True):

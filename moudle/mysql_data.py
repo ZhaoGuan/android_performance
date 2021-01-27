@@ -42,14 +42,15 @@ class DataBase:
             # 发生错误时回滚
             self.db.rollback()
 
-    def insert_data(self, app, avg_cpu, avg_mem, avg_battery, avg_start_app):
+    def insert_data(self, app, avg_cpu, avg_mem, battery_stats, battery_time, avg_battery, avg_start_app):
         '''{'package_name': 'com.yiding.jianhuo', 'tag': '3.6.5', 'device': 'CLT-AL00'}'''
         tag = app["tag"]
         package_name = app['package_name']
         device = app['device']
-        sql = "INSERT INTO android_performance(tag,avg_cpu,avg_mem,avg_battery,avg_start_app,package_name,device) " \
-              "VALUES ('%s',%s,%s,%s,%s,'%s','%s')" \
-              % (tag, avg_cpu, avg_mem, avg_battery, avg_start_app, package_name, device)
+        sql = "INSERT INTO android_performance" \
+              "(tag,avg_cpu,avg_mem, battery_stats, battery_time,avg_battery,avg_start_app,package_name,device) " \
+              "VALUES ('%s',%s,%s,%s,%s,%s,%s,'%s','%s')" \
+              % (tag, avg_cpu, avg_mem, battery_stats, battery_time, avg_battery, avg_start_app, package_name, device)
         print(sql)
         try:
             # 执行sql语句

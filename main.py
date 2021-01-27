@@ -215,11 +215,12 @@ def upload_avg_data():
     package_name, activity, the_version_name, device_name = base_config()
     app = {"package_name": package_name, "tag": the_version_name, "device": device_name}
     db = DataBase()
-    avg_cpu, avg_mem, avg_battery, avg_start_app = avg_data()
-    if avg_cpu is False:
+    avg_cpu_data, avg_mem_data, battery_stats, battery_time, avg_battery_stats, avg_start_app = avg_data()
+    if avg_cpu_data is False:
         window_text.insert('end', "未发现性能数据\n")
         return
-    result = db.insert_data(app, avg_cpu, avg_mem, avg_battery, avg_start_app)
+    result = db.insert_data(app, avg_cpu_data, avg_mem_data, battery_stats, battery_time, avg_battery_stats,
+                            avg_start_app)
     if result:
         window_text.insert('end', "性能数据上传成功\n")
     else:
