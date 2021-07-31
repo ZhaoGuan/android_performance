@@ -13,7 +13,6 @@ import tkinter.messagebox as msgbox
 import os
 import time
 from moudle.utils import *
-from moudle.mysql_data import DataBase
 
 PATH = os.path.dirname(os.path.abspath(__file__))
 package_name = None
@@ -202,13 +201,6 @@ def proxy_top_level():
     proxy_window_text.pack()
 
 
-def mysql_config():
-    try:
-        db = DataBase()
-        return db
-    except Exception as e:
-        print("数据库错误:" + str(e))
-        return False
 
 
 def upload_avg_data():
@@ -302,16 +294,6 @@ if __name__ == "__main__":
     diff_button = tk.Button(diff_r_frame, text="启动", width=10,
                             height=2, command=android_performance_diff)
     diff_button.pack()
-    # db = mysql_config()
-    # if db:
-    #     mysql_frame = tk.Frame()
-    #     mysql_frame.pack()
-    #     mysql_label = tk.Label(mysql_frame, text='上传性能平均值至MYSQL数据库')
-    #     mysql_button = tk.Button(mysql_frame, text="上传", width=10,
-    #                              height=2, command=upload_avg_data)
-    #     mysql_label.pack(side="left")
-    #     mysql_button.pack(side="right")
-    # 代理工具
     p_frame = tk.Frame()
     p_frame.pack()
     proxy_label = tk.Label(p_frame, height=2, text="代理工具启动:")
