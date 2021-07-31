@@ -1,18 +1,17 @@
 import time
+from moudle.utils import ADB
 
 
 class Task(object):
-    def __init__(self, name):
-        self.name = name
+    def __init__(self):
         self.period = None
         self.d = None
-        self.device = None
         self.applicationid = None
         self.version_name = None
-        self.pid = None
         self.interval = None
         self.output = None
         self.info_list = set([])
+        self.shell = None
 
     def execute(self):
         pass
@@ -25,11 +24,22 @@ class Task(object):
         self.d = d
 
 
-class RandomTask(Task):
+class AndroidTask(Task):
+    def __init__(self, package_name, duid):
+        self.base_shell = ADB()
+        self.duid = duid
+        self.package_name = package_name
+        super().__init__()
 
-    def __init__(self, name):
-        super().__init__(name)
-        self.duration = 0.0
+    def shell(self, cmd):
+        return self.base_shell.shell(cmd, duid=self.duid)
 
-    def execute(self):
-        time.sleep(self.duration)
+    def pid(self):
+        result = self.shell("ps |grep %s| awk '{ print $2 }'" % self.package_name).replace("\n", " ")
+        result_list = result.split(" ")
+        return result_list[0]
+
+    def uid(self):
+        result = self.shell("ps |grep %s| awk '{ print $1 }'" % self.package_name).replace("\n", " ")
+        result_list = result.split(" ")
+        return result_list[0]

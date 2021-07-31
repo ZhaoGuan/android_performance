@@ -9,10 +9,42 @@ import subprocess
 import sys
 import yaml
 from mitmproxy.tools.main import mitmweb
+from ppadb.client import Client as AdbClient
 
 the_time = time.time()
 MOUDLE_PATH = os.path.dirname(os.path.abspath(__file__))
 PATH = os.path.dirname(os.path.abspath(__file__))
+
+
+class MetaSingleton(type):
+    __instances = {}
+
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls.__instances:
+            cls.__instances[cls] = super(MetaSingleton, cls).__call__()
+        return cls.__instances[cls]
+
+
+class ADB(metaclass=MetaSingleton):
+    adb_client = None
+    device = None
+
+    def __init__(self):
+        if self.adb_client is None:
+            self.adb_client = AdbClient()
+        self.duid_list = [device.serial for device in self.adb_client.devices()]
+
+    def shell(self, cmd, duid=None):
+        assert len(self.duid_list) > 0, "未发现可用设备"
+        if duid is None:
+            if self.device is None:
+                self.device = self.adb_client.device(self.duid_list[0])
+        else:
+            if duid not in self.duid_list:
+                assert False, f"没有所指定设备{duid}"
+            else:
+                self.device = self.adb_client.device(duid)
+        return self.device.shell(cmd)
 
 
 def config_reader(yaml_file):
@@ -60,12 +92,9 @@ def dir_list(path):
     return dir_lists
 
 
-def run_command(command):
-    p_obj = subprocess.Popen(
-        args="adb shell " + command,
-        stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE, shell=True, encoding="utf-8")
-    result = p_obj.stdout.read()
+def run_command(command, duid=None):
+    adb = ADB()
+    result = adb.shell(cmd=command, duid=duid)
     return result
 
 
@@ -97,23 +126,23 @@ def get_action_writer(dirs, file_name, field_names):
     return writer
 
 
-def get_applicationid_by_pid(pid):
-    ps_info = re.findall("\S+", run_command("ps | grep " + pid))
+def android_get_application_id_by_pid(pid, duid=None):
+    ps_info = re.findall("\S+", run_command("ps | grep " + pid, duid))
     return ps_info[len(ps_info) - 1]
 
 
-def get_pid_by_applicationid(applicationid):
-    ps_info = re.findall("\S+", run_command("ps | grep " + applicationid))
+def android_get_pid_by_application_id(application_id, duid):
+    ps_info = re.findall("\S+", run_command("ps | grep " + application_id, duid))
     return ps_info[1]
 
 
-def get_version_name_by_applicationid(applicationid):
-    version_info = run_command("dumpsys package " + applicationid + " | grep versionName")
+def android_get_version_name_by_application_id(application_id, duid=None):
+    version_info = run_command("dumpsys package " + application_id + " | grep versionName", duid)
     return re.findall("\d+.+\d", version_info)[0]
 
 
-def get_devices_name():
-    return run_command("getprop ro.product.model").replace("\n", "")
+def android_get_devices_name(duid=None):
+    return run_command("getprop ro.product.model", duid).replace("\n", "")
 
 
 def run_proxy(port):

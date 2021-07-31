@@ -15,6 +15,7 @@ itsdangerous==1.1.0
 Jinja2==2.11.2
 kaitaistruct==0.9
 ldap3==2.8.1
+macholib==1.14
 MarkupSafe==1.1.1
 mitmproxy==6.0.2
 msgpack==1.0.2
@@ -22,9 +23,12 @@ numpy==1.19.5
 passlib==1.7.4
 protobuf==3.14.0
 publicsuffix2==2.20191221
+pure-python-adb==0.3.0.dev0
 pyaml==20.4.0
 pyasn1==0.4.8
 pycparser==2.20
+pyinstaller==4.2
+pyinstaller-hooks-contrib==2020.11
 PyMySQL==1.0.2
 pyOpenSSL==20.0.1
 pyparsing==2.4.7

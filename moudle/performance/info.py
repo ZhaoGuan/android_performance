@@ -66,6 +66,9 @@ class CPUInfo(Info):
         self.is_running = False
 
     def get_cpu_info(self):
+        '''
+        所有的CPU使用率
+        '''
         dirs = self.task.output + "/cpu_stats/"
         # file_name = "cpu_" + self.taskevice + "_" + self.task.applicationid + "_" + self.task.version_name + "_" + self.task.name
         file_name = "cpu"
@@ -238,8 +241,8 @@ class NetInfo(Info):
                 current_array = re.split("\s+", current_info)
                 current_net_down = int(current_array[2])
                 current_net_up = int(current_array[10])
-                time_delta = (current_time - self.last_time) / 1000000000.0
-                time_total = (current_time - self.start_time) / 1000000000.0
+                time_delta = (current_time - self.last_time)
+                time_total = (current_time - self.start_time)
                 net_delta_up = (current_net_up - self.last_net_up) / 1024.0
                 net_delta_down = (current_net_down - self.last_net_down) / 1024.0
                 net_total_up = (current_net_up - self.start_net_up) / 1024.0

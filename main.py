@@ -4,10 +4,10 @@
 import multiprocessing
 
 multiprocessing.freeze_support()
-from moudle.performance.device_info import DeviceInfoRun, app_pid
+from moudle.performance.device_info import DeviceInfoRun
 from moudle.performance.info_report import info_report, diff_report, avg_data
 from moudle.performance.app_start_info import AppStart
-from moudle.utils import get_version_name_by_applicationid, dir_list, MOUDLE_PATH, run_proxy
+from moudle.utils import dir_list, MOUDLE_PATH, run_proxy, android_get_devices_name, android_get_application_id_by_pid
 import tkinter as tk
 import tkinter.messagebox as msgbox
 import os
@@ -31,26 +31,26 @@ def base_config():
     the_version_name = version_name.get()
     device_name = device_name_entry.get()
     if device_name == "":
-        device_name = get_devices_name()
+        device_name = android_get_devices_name()
         window_text.insert("end", "获取设备名称:%s\n" % str(device_name))
     else:
         window_text.insert("end", "设备名称:%s\n" % str(device_name))
     if package_name == "":
-        # msgbox.showerror(title='启动失败', message='未填写应用包名')
-        # return
-        package_name = "com.yiding.jianhuo"
-        window_text.insert("end", "使用默认包名:%s\n" % str(package_name))
+        msgbox.showerror(title='启动失败', message='未填写应用包名')
+        return
+        # package_name = "com.yiding.jianhuo"
+        # window_text.insert("end", "使用默认包名:%s\n" % str(package_name))
     else:
         window_text.insert("end", "包名:%s\n" % str(package_name))
     if activity == "":
-        # msgbox.showerror(title='启动失败', message='未填写启动页名称')
-        # return
-        activity = "com.yiding.jianhuo.SplashActivity"
-        window_text.insert("end", "使用默认启动页:%s\n" % str(activity))
+        msgbox.showerror(title='启动失败', message='未填写启动页名称')
+        return
+        # activity = "com.yiding.jianhuo.SplashActivity"
+        # window_text.insert("end", "使用默认启动页:%s\n" % str(activity))
     else:
         window_text.insert("end", "启动页:%s\n" % str(activity))
     if the_version_name == "":
-        the_version_name = get_version_name_by_applicationid(package_name)
+        the_version_name = android_get_version_name_by_application_id(package_name)
         window_text.insert("end", "自动获取版本号:%s\n" % str(the_version_name))
     else:
         window_text.insert("end", "版本号:%s\n" % str(the_version_name))
@@ -85,14 +85,14 @@ def android_performance_begin():
     global the_version_name
     global device_name
     package_name, activity, the_version_name, device_name = base_config()
-    pid = app_pid(package_name)
+    pid = android_get_application_id_by_pid(package_name)
     window_text.insert("end", package_name + "\n")
     window_text.insert("end", pid + "\n")
     if pid == "":
         msgbox.showerror(title='启动失败', message='未发现对应应用的pid')
         return
     if the_version_name == "":
-        the_version_name = get_version_name_by_applicationid(package_name)
+        the_version_name = android_get_version_name_by_application_id(package_name)
     global device_info
     global running
     device_info = DeviceInfoRun(the_version_name, package_name)
@@ -302,15 +302,15 @@ if __name__ == "__main__":
     diff_button = tk.Button(diff_r_frame, text="启动", width=10,
                             height=2, command=android_performance_diff)
     diff_button.pack()
-    db = mysql_config()
-    if db:
-        mysql_frame = tk.Frame()
-        mysql_frame.pack()
-        mysql_label = tk.Label(mysql_frame, text='上传性能平均值至MYSQL数据库')
-        mysql_button = tk.Button(mysql_frame, text="上传", width=10,
-                                 height=2, command=upload_avg_data)
-        mysql_label.pack(side="left")
-        mysql_button.pack(side="right")
+    # db = mysql_config()
+    # if db:
+    #     mysql_frame = tk.Frame()
+    #     mysql_frame.pack()
+    #     mysql_label = tk.Label(mysql_frame, text='上传性能平均值至MYSQL数据库')
+    #     mysql_button = tk.Button(mysql_frame, text="上传", width=10,
+    #                              height=2, command=upload_avg_data)
+    #     mysql_label.pack(side="left")
+    #     mysql_button.pack(side="right")
     # 代理工具
     p_frame = tk.Frame()
     p_frame.pack()
