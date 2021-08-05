@@ -131,7 +131,8 @@ def make_url_statistics_report():
             result.append(row)
     report = Template(template)
     result = report.render(data_list=result)
-    report_name = report_path + "/" + str(int(time.time())) + "_url_report.html"
+    # report_name = report_path + "/" + str(int(time.time())) + "_url_report.html"
+    report_name = report_path + "/" + str(new_path.split("/")[-1].replace("_data.csv", "")) + "_url_report.html"
     with open(report_name, "w") as f:
         f.write(result)
     return report_name
