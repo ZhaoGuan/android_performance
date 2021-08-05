@@ -8,8 +8,10 @@ import os
 import time
 import yaml
 import json
+from moudle.utils import MOUDLE_PATH
 
 PATH = os.path.dirname(os.path.abspath(__file__))
+BASE_PATH = os.path
 info_path = os.path.abspath(PATH + "/../info")
 recording_path = os.path.abspath(info_path + "/recording/")
 report_path = os.path.abspath(info_path + "/../report/")
@@ -95,11 +97,11 @@ def dir_list(path):
     return dir_lists
 
 
-def make_report():
+def make_url_statistics_report():
     make_dir(report_path)
     result = []
     new_path = new_dir(recording_path)
-    with open(new_path)as f:
+    with open(new_path) as f:
         data = csv.DictReader(f)
         for row in data:
             status_code = row["status_code"]
@@ -129,8 +131,10 @@ def make_report():
             result.append(row)
     report = Template(template)
     result = report.render(data_list=result)
-    with open(report_path + "/" + str(int(time.time())) + "_url_report.html", "w") as f:
+    report_name = report_path + "/" + str(int(time.time())) + "_url_report.html"
+    with open(report_name, "w") as f:
         f.write(result)
+    return report_name
 
 
 class UrlStatistics:
@@ -180,8 +184,8 @@ class UrlStatistics:
 
 def done(self):
     self.f.close()
-    make_report()
+    # make_report()
 
 
 if __name__ == "__main__":
-    make_report()
+    make_url_statistics_report()

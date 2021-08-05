@@ -13,8 +13,9 @@ import tkinter.messagebox as msgbox
 import os
 import time
 from moudle.utils import *
+from proxy.url_statistics import make_url_statistics_report
 
-PATH = os.path.dirname(os.path.abspath(__file__))
+PATH = os.path.dirname(os.getcwd())
 package_name = None
 the_version_name = None
 device_name = None
@@ -84,7 +85,7 @@ def android_performance_begin():
     global the_version_name
     global device_name
     package_name, activity, the_version_name, device_name = base_config()
-    pid = android_get_application_id_by_pid(package_name)
+    pid = android_get_pid_by_application_id(package_name)
     window_text.insert("end", package_name + "\n")
     window_text.insert("end", pid + "\n")
     if pid == "":
@@ -167,6 +168,12 @@ def stop_proxy():
         proxy_window_text.insert('end', "已经关闭抓包\n")
 
 
+def get_proxy_report():
+    report_path = make_url_statistics_report()
+    if open_file(report_path) is False:
+        proxy_window_text.insert('end', f"报告路径错误,不存在{report_path}\n")
+
+
 def proxy_top_level():
     global port_entry
     global proxy_window_text
@@ -177,7 +184,8 @@ def proxy_top_level():
     proxy_my_label = tk.Label(proxy_top, text=
     "如果需要使用安全证书请连接代理后访问mitm.it,进行证书安装.\n"
     "config.yml中添加过滤的host\n"
-    "recording文件夹存放每次录制的数据,report中存放是报告结果\n")
+    "recording文件夹存放每次录制的数据,report中存放是报告结果\n"
+    "report只根据最新抓包结果生成报告\n")
     proxy_my_label.pack()
     proxy_master = tk.Frame(proxy_top)
     proxy_master.pack()
@@ -192,31 +200,24 @@ def proxy_top_level():
     port_entry.pack()
 
     proxy_start_button = tk.Button(proxy_frame_r, text='启动', width=10,
-                                   height=2, command=start_proxy)
+                                   height=1, command=start_proxy)
     proxy_stop_button = tk.Button(proxy_frame_r, text='关闭', width=10,
-                                  height=2, command=stop_proxy)
+                                  height=1, command=stop_proxy)
+    proxy_report_button = tk.Button(proxy_frame_r, text='生成报告', width=10,
+                                    height=1, command=get_proxy_report)
     proxy_start_button.pack()
     proxy_stop_button.pack()
+    proxy_report_button.pack()
     proxy_window_text = tk.Text(proxy_top)
     proxy_window_text.pack()
-
-
 
 
 def upload_avg_data():
     package_name, activity, the_version_name, device_name = base_config()
     app = {"package_name": package_name, "tag": the_version_name, "device": device_name}
-    db = DataBase()
     avg_cpu_data, avg_mem_data, battery_stats, battery_time, avg_battery_stats, avg_start_app = avg_data()
     if avg_cpu_data is False:
         window_text.insert('end', "未发现性能数据\n")
-        return
-    result = db.insert_data(app, avg_cpu_data, avg_mem_data, battery_stats, battery_time, avg_battery_stats,
-                            avg_start_app)
-    if result:
-        window_text.insert('end', "性能数据上传成功\n")
-    else:
-        window_text.insert('end', "性能数据上传失败\n")
 
 
 if __name__ == "__main__":
@@ -266,7 +267,7 @@ if __name__ == "__main__":
     stat_time_info_frame.pack(side="left")
     stat_time_info_label = tk.Label(stat_time_info_frame, text="执行启动时间计算")
     stat_time_info_start_button = tk.Button(stat_time_info_frame, text='启动', width=10,
-                                            height=2, command=start_avg_time)
+                                            height=1, command=start_avg_time)
     stat_time_info_label.pack(side="left")
     stat_time_info_start_button.pack()
     # 性能手机
@@ -274,9 +275,9 @@ if __name__ == "__main__":
     device_info_frame.pack(side="right")
     device_label = tk.Label(device_info_frame, text="执行性能收集")
     device_info_start_button = tk.Button(device_info_frame, text='启动', width=10,
-                                         height=2, command=android_performance_begin)
+                                         height=1, command=android_performance_begin)
     device_info_stop_button = tk.Button(device_info_frame, text='关闭', width=10,
-                                        height=2, command=android_performance_end)
+                                        height=1, command=android_performance_end)
     device_label.pack(side="left")
     device_info_start_button.pack()
     device_info_stop_button.pack()
@@ -292,13 +293,13 @@ if __name__ == "__main__":
     diff_label.pack()
     diff_entry.pack()
     diff_button = tk.Button(diff_r_frame, text="启动", width=10,
-                            height=2, command=android_performance_diff)
+                            height=1, command=android_performance_diff)
     diff_button.pack()
     p_frame = tk.Frame()
     p_frame.pack()
-    proxy_label = tk.Label(p_frame, height=2, text="代理工具启动:")
+    proxy_label = tk.Label(p_frame, height=1, text="代理工具启动:")
     proxy_button = tk.Button(p_frame, text='启动', width=10,
-                             height=2, command=proxy_top_level)
+                             height=1, command=proxy_top_level)
     proxy_label.pack(side="left")
     proxy_button.pack(side="right")
     window_text = tk.Text(window)

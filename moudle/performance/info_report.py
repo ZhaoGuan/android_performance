@@ -374,15 +374,13 @@ def info_report(app, show_start_report=True):
 
 
 def avg_cpu(base_path):
-    files = file_list(base_path + "/cpu_stats/")
-    file = files[0]
+    file = new_file(base_path + "/cpu_stats/")
     cpu_time_labels, cpu_data = get_cpu_data(file)
     return nu.average([float(data) for data in cpu_data])
 
 
 def avg_mem(base_path):
-    files = file_list(base_path + "/mem_stats/")
-    file = files[0]
+    file = new_file(base_path + "/mem_stats/")
     mem_time_labels, mem_data = get_mem_data(file)
     if len(mem_data) > 20:
         mem_data = nu.average([float(data) for data in mem_data[10:]])
@@ -392,16 +390,14 @@ def avg_mem(base_path):
 
 
 def avg_fps(base_path):
-    files = file_list(base_path + "/fps_stats/")
-    file = files[0]
+    file = new_file(base_path + "/fps_stats/")
     fps_time_labels, fps_data = get_fps_data(file)
     fps_data = nu.average([float(data) for data in fps_data])
     return nu.average([float(data) for data in fps_data])
 
 
 def avg_net(base_path):
-    files = file_list(base_path + "/net_stats/")
-    file = files[0]
+    file = new_file(base_path + "/net_stats/")
     net_time_labels, net_avg_down_data, net_avg_up_data, net_total_down_data, net_total_up_data = get_net_data(
         file)
     net_total_down_data = nu.average([float(data) for data in net_total_down_data])
@@ -424,8 +420,7 @@ def avg_start(base_path):
 
 def avg_battery(base_path):
     avg_battery_list = []
-    files = file_list(base_path + "/battery_stats/")
-    file = files[0]
+    file = file_list(base_path + "/battery_stats/")
     battery_stats, battery_time, avg_battery_stats, show_battery_report = get_battery_data(file)
     if battery_stats != "":
         time_battery = float(battery_stats) / float(battery_time)
@@ -464,6 +459,6 @@ def diff_report(path_list=None):
 
 
 if __name__ == "__main__":
-    # info_report({"package_name": "3.6.3", "tag": "3.6.3", "device": "华为"})
-    a = avg_data("3.6.3")
+    # a = avg_cpu(file_path)
+    a = avg_mem("/Users/gz/Desktop/project/ttjb/android_performance/info/3.9.12")
     print(a)

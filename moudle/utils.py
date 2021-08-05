@@ -1,11 +1,11 @@
 import multiprocessing
+import platform
 
 multiprocessing.freeze_support()
 import csv
 import os
 import re
 import time
-import subprocess
 import sys
 import yaml
 from mitmproxy.tools.main import mitmweb
@@ -33,6 +33,7 @@ class ADB(metaclass=MetaSingleton):
         if self.adb_client is None:
             self.adb_client = AdbClient()
         self.duid_list = [device.serial for device in self.adb_client.devices()]
+        print(self.duid_list)
 
     def shell(self, cmd, duid=None):
         assert len(self.duid_list) > 0, "未发现可用设备"
@@ -45,6 +46,12 @@ class ADB(metaclass=MetaSingleton):
             else:
                 self.device = self.adb_client.device(duid)
         return self.device.shell(cmd)
+
+    def get_pid(self, package_name, duid=None):
+        if duid is None:
+            return self.adb_client.device(self.duid_list[0]).get_pid(package_name=package_name)
+        else:
+            return self.adb_client.device(duid).get_pid(package_name=package_name)
 
 
 def config_reader(yaml_file):
@@ -127,13 +134,14 @@ def get_action_writer(dirs, file_name, field_names):
 
 
 def android_get_application_id_by_pid(pid, duid=None):
+    print(pid, duid)
     ps_info = re.findall("\S+", run_command("ps | grep " + pid, duid))
+    print(ps_info)
     return ps_info[len(ps_info) - 1]
 
 
-def android_get_pid_by_application_id(application_id, duid):
-    ps_info = re.findall("\S+", run_command("ps | grep " + application_id, duid))
-    return ps_info[1]
+def android_get_pid_by_application_id(application_id, duid=None):
+    return ADB().get_pid(application_id, duid)
 
 
 def android_get_version_name_by_application_id(application_id, duid=None):
@@ -148,12 +156,20 @@ def android_get_devices_name(duid=None):
 def run_proxy(port):
     script_path = os.path.abspath(PATH + "/../proxy/proxy_run.py")
     sys.argv = ["", "-p", str(port), "-s", script_path]
-    try:
-        multiprocessing.set_start_method("fork")
-    except:
-        pass
     running = multiprocessing.Process(target=mitmweb)
     running.daemon = True
     running.start()
     pid = running.pid
     return running, pid
+
+
+def open_file(file_path):
+    sys_str = platform.system()
+    if os.path.exists(file_path) is False:
+        return False
+    if sys_str == "Windows":
+        cmd = "start " + file_path
+    else:
+        cmd = "open " + file_path
+    os.system(cmd)
+    return True

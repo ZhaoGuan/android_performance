@@ -29,17 +29,17 @@ class AndroidTask(Task):
         self.base_shell = ADB()
         self.duid = duid
         self.package_name = package_name
+        self.pid = self.get_pid()
+        self.uid = self.get_uid()
         super().__init__()
 
     def shell(self, cmd):
         return self.base_shell.shell(cmd, duid=self.duid)
 
-    def pid(self):
-        result = self.shell("ps |grep %s| awk '{ print $2 }'" % self.package_name).replace("\n", " ")
-        result_list = result.split(" ")
-        return result_list[0]
+    def get_pid(self):
+        return self.base_shell.get_pid(self.package_name, self.duid)
 
-    def uid(self):
+    def get_uid(self):
         result = self.shell("ps |grep %s| awk '{ print $1 }'" % self.package_name).replace("\n", " ")
         result_list = result.split(" ")
         return result_list[0]
