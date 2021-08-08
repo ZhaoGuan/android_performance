@@ -177,8 +177,7 @@ def get_proxy_report():
 
 def get_har():
     report_path = make_har()
-    if open_file(report_path) is False:
-        proxy_gui_text.insert('end', f"报告路径错误,不存在{report_path}\n")
+    proxy_gui_text.insert('end', f"HAR文件路径:{report_path}")
 
 
 def get_statistics_report():
