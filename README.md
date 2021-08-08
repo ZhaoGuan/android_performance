@@ -1,5 +1,6 @@
 # Android_performance
-
+使用虚拟环境的时候  
+PYTHON_CONFIGURE_OPTS="--enable-framework" pyenv install 3.9.6  
 main.py 为主入口可以直接运行  
 使用pyinstaller进行打包  
 运行build.sh，生成的结果在dist文件夹中。  

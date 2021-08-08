@@ -1,0 +1,137 @@
+<html>
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+    <script src="https://unpkg.com/vue@next"></script>
+    <!-- import CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/element-plus/lib/theme-chalk/index.css">
+    <!-- import JavaScript -->
+    <script src="https://unpkg.com/element-plus/lib/index.full.js"></script>
+    <title>接口时间</title>
+</head>
+<body>
+<div id="app">
+    <el-table
+            :data="tableData"
+            style="width: 100%"
+            :default-sort="{prop: 'date', order: 'descending'}"
+    >
+        <el-table-column type="expand">
+            <template #default="scope">
+                <el-collapse>
+                    <el-collapse-item title="请求头">
+                        <div v-for="data in scope.row.request.headers">
+                            {{data.name}}:{{data.value}}
+                        </div>
+                    </el-collapse-item>
+                    <el-collapse-item title="请求参数">
+                        <div v-for="data in scope.row.request.queryString">
+                            {{data.name}}={{data.value}}
+                        </div>
+                    </el-collapse-item>
+                    <el-collapse-item title="请求体">
+                        <div v-for="(value,key) in scope.row.response.postData">
+                            {{key}}:{{value}}
+                        </div>
+                    </el-collapse-item>
+                    <el-collapse-item title="返回头">
+                        <div v-for="data in scope.row.response.headers">
+                            {{data.name}}:{{data.value}}
+                        </div>
+                    </el-collapse-item>
+                    <el-collapse-item title="返回体">
+                        <div v-for="(value,key) in scope.row.response.content">
+                            {{key}}:{{value}}
+                        </div>
+                    </el-collapse-item>
+                </el-collapse>
+            </template>
+        </el-table-column>
+        <el-table-column
+                sortable
+                width="200"
+                prop="startedDateTime"
+                label="时间">
+        </el-table-column>
+        <el-table-column
+                label="URL"
+                prop="url">
+        </el-table-column>
+        <el-table-column
+                width="100"
+                prop="method"
+                label="方法">
+        </el-table-column>
+        <el-table-column
+                sortable
+                width="100"
+                prop="body_size"
+                label="返回体大小">
+        </el-table-column>
+        <el-table-column
+                sortable
+                prop="status_code"
+                width=100"
+                label="状态码">
+            <template #="scope">
+                <el-button
+                        v-if="scope.row.status_code.toString().startsWith(2)||scope.row.status_code.toString().startsWith(3)"
+                        type="success">
+                    {{
+                    scope.row.status_code
+                    }}
+                </el-button>
+                <el-button v-else type="danger">{{
+                    scope.row.status_code
+                    }}
+                </el-button>
+            </template>
+        </el-table-column>
+        <el-table-column
+                prop="time"
+                sortable
+                width="100"
+                label="耗时">
+            <template #="scope">
+                <el-button v-if="scope.row.spend_time>300" type="danger">{{
+                    scope.row.spend_time
+                    }}
+                </el-button>
+                <el-button v-else type="success">{{
+                    scope.row.spend_time
+                    }}
+                </el-button>
+            </template>
+        </el-table-column>
+    </el-table>
+</div>
+<script>
+    const App = {
+        data() {
+            return {
+                tableData: {[data_list]}
+            }
+        }
+    };
+    const app = Vue.createApp(App);
+    app.use(ElementPlus);
+    app.mount("#app");
+</script>
+<style>
+    .demo-table-expand {
+        font-size: 0;
+    }
+
+    .demo-table-expand label {
+        width: 90px;
+        color: #99a9bf;
+    }
+
+    .demo-table-expand .el-form-item {
+        margin-right: 0;
+        margin-bottom: 0;
+        width: 50%;
+    }
+</style>
+</body>
+</html>

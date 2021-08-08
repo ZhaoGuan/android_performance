@@ -1,0 +1,161 @@
+<html>
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+    <script src="https://unpkg.com/vue@next"></script>
+    <!-- import CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/element-plus/lib/theme-chalk/index.css">
+    <!-- import JavaScript -->
+    <script src="https://unpkg.com/element-plus/lib/index.full.js"></script>
+    <title>接口时间</title>
+</head>
+<body>
+<div id="app">
+    <el-tabs>
+        <el-tab-pane label="HOST">
+            <el-collapse>
+                <div v-for="(host_data,host) in mapData">
+                    <el-collapse-item :title="host">
+                        <el-table
+                                :data="host_data"
+                                style="width: 100%">
+                            <el-table-column
+                                    width="100"
+                                    prop="scheme"
+                                    label="SCHEME">
+                            </el-table-column>
+                            <el-table-column
+                                    prop="path"
+                                    label="PATH">
+                            </el-table-column>
+                            <el-table-column
+                                    width="100"
+                                    prop="method"
+                                    label="方法"
+                                    width="100">
+                            </el-table-column>
+                            <el-table-column
+                                    sortable
+                                    prop="body_size"
+                                    label="平均体大小"
+                                    width="100">
+                            </el-table-column>
+                            <el-table-column
+                                    width="100"
+                                    sortable
+                                    prop="cost_time"
+                                    label="平均耗时MS">
+                                <template #="scope">
+                                    <el-button v-if="scope.row.cost_time>300" type="danger">{{
+                                        scope.row.cost_time
+                                        }}
+                                    </el-button>
+                                    <el-button v-else type="success">{{
+                                        scope.row.cost_time
+                                        }}
+                                    </el-button>
+                                </template>
+                            </el-table-column>
+                        </el-table>
+                    </el-collapse-item>
+                </div>
+            </el-collapse>
+        </el-tab-pane>
+        <el-tab-pane label="列表">
+            <el-table
+                    :data="tableData"
+                    style="width: 100%">
+                <el-table-column
+                        width="100"
+                        prop="scheme"
+                        label="SCHEME">
+                </el-table-column>
+                <el-table-column
+                        width="400"
+                        prop="host_name"
+                        label="Host">
+                </el-table-column>
+                <el-table-column
+                        prop="path"
+                        label="PATH">
+                </el-table-column>
+                <el-table-column
+                        width="100"
+                        prop="method"
+                        label="方法"
+                        width="180">
+                </el-table-column>
+                <el-table-column
+                        sortable
+                        width="100"
+                        prop="body_size"
+                        label="平均体大小"
+                        width="180">
+                </el-table-column>
+                <el-table-column
+                        sortable
+                        width="100"
+                        prop="cost_time"
+                        label="平均耗时MS">
+                    <template #="scope">
+                        <el-button v-if="scope.row.cost_time>300" type="danger">{{
+                            scope.row.cost_time
+                            }}
+                        </el-button>
+                        <el-button v-else type="success">{{
+                            scope.row.cost_time
+                            }}
+                        </el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
+        </el-tab-pane>
+    </el-tabs>
+</div>
+<script>
+    const App = {
+        data() {
+            return {
+                mapData: {[data_list]},
+                tableData: []
+            }
+        },
+        mounted() {
+            for (const host_name in this.mapData) {
+                const temp_host_data = this.mapData[host_name]
+                for (const path_index in temp_host_data) {
+                    const path_data = temp_host_data[path_index]
+                    this.tableData.push({
+                        host_name: host_name,
+                        scheme: path_data["scheme"],
+                        path: path_data["path"],
+                        method: path_data["method"],
+                        cost_time: path_data["cost_time"],
+                        body_size: path_data["body_size"]
+                    })
+                }
+            }
+        }
+    };
+    const app = Vue.createApp(App);
+    app.use(ElementPlus);
+    app.mount("#app");
+</script>
+<style>
+    .demo-table-expand {
+        font-size: 0;
+    }
+
+    .demo-table-expand label {
+        width: 90px;
+        color: #99a9bf;
+    }
+
+    .demo-table-expand .el-form-item {
+        margin-right: 0;
+        margin-bottom: 0;
+        width: 50%;
+    }
+</style>
+</body>
+</html>

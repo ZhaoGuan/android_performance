@@ -13,7 +13,7 @@ import tkinter.messagebox as msgbox
 import os
 import time
 from moudle.utils import *
-from proxy.url_statistics import make_url_statistics_report
+from proxy.url_statistics import make_url_statistics_report, make_url_time_report, make_har
 
 PATH = os.path.dirname(os.getcwd())
 package_name = None
@@ -169,6 +169,18 @@ def stop_proxy():
 
 
 def get_proxy_report():
+    report_path = make_url_time_report()
+    if open_file(report_path) is False:
+        proxy_window_text.insert('end', f"报告路径错误,不存在{report_path}\n")
+
+
+def get_har():
+    report_path = make_har()
+    if open_file(report_path) is False:
+        proxy_window_text.insert('end', f"报告路径错误,不存在{report_path}\n")
+
+
+def get_statistics_report():
     report_path = make_url_statistics_report()
     if open_file(report_path) is False:
         proxy_window_text.insert('end', f"报告路径错误,不存在{report_path}\n")
@@ -187,6 +199,12 @@ def proxy_top_level():
     "recording文件夹存放每次录制的数据,report中存放是报告结果\n"
     "report只根据最新抓包结果生成报告\n")
     proxy_my_label.pack()
+    proxy_input = tk.Frame(proxy_top)
+    proxy_input.pack()
+    port_label = tk.Label(proxy_input, text="请输要使用的端口号:")
+    port_label.pack(side="left")
+    port_entry = tk.Entry(proxy_input)
+    port_entry.pack(side="right")
     proxy_master = tk.Frame(proxy_top)
     proxy_master.pack()
     proxy_frame_l = tk.Frame(proxy_master)
@@ -194,20 +212,21 @@ def proxy_top_level():
     proxy_frame_l.pack(side="left")
     proxy_frame_r.pack(side="right")
 
-    port_label = tk.Label(proxy_frame_l, text="请输要使用的端口号:")
-    port_label.pack()
-    port_entry = tk.Entry(proxy_frame_l)
-    port_entry.pack()
-
-    proxy_start_button = tk.Button(proxy_frame_r, text='启动', width=10,
+    proxy_start_button = tk.Button(proxy_frame_l, text='启动', width=10,
                                    height=1, command=start_proxy)
-    proxy_stop_button = tk.Button(proxy_frame_r, text='关闭', width=10,
+    proxy_stop_button = tk.Button(proxy_frame_l, text='关闭', width=10,
                                   height=1, command=stop_proxy)
     proxy_report_button = tk.Button(proxy_frame_r, text='生成报告', width=10,
                                     height=1, command=get_proxy_report)
+    proxy_har_button = tk.Button(proxy_frame_r, text='生成HAR', width=10,
+                                 height=1, command=get_har)
+    proxy_statistics_button = tk.Button(proxy_frame_r, text='生成统计报告', width=10,
+                                        height=1, command=get_statistics_report)
     proxy_start_button.pack()
     proxy_stop_button.pack()
     proxy_report_button.pack()
+    proxy_har_button.pack()
+    proxy_statistics_button.pack()
     proxy_window_text = tk.Text(proxy_top)
     proxy_window_text.pack()
 
