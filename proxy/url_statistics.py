@@ -72,6 +72,7 @@ def http_row_data(data):
 
 
 # 时序详情内容
+# TODO 这个遇到非json结构内容需要兼容处理
 def make_url_time_report():
     make_dir(report_path)
     result = []
