@@ -227,7 +227,7 @@ def proxy_top_level():
     proxy_report_button.pack()
     proxy_har_button.pack()
     proxy_statistics_button.pack()
-    proxy_gui_text = ttk.Text(proxy_top)
+    proxy_gui_text = tk.Text(proxy_top)
     proxy_gui_text.pack()
 
 

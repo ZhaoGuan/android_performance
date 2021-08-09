@@ -142,7 +142,8 @@ def make_url_statistics_report():
                 "body_size": format(numpy.mean(path_data["body_size"]), '.2f'),
                 "path": path_data["path"],
                 "method": path_data["method"],
-                "scheme": path_data["scheme"]
+                "scheme": path_data["scheme"],
+                "count": len(path_data["cost_time"])
             })
         result.update({host: temp_host_data})
     report = JINJA2_ENV.get_template("http_url_statistics_report.html")

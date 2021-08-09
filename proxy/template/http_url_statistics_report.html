@@ -17,6 +17,9 @@
                 <div v-for="(host_data,host) in mapData">
                     <el-collapse-item :title="host">
                         <el-table
+                                :row-style="{height:'20px'}"
+                                :cell-style="{padding:'0px'}"
+                                style="font-size: 10px"
                                 :data="host_data"
                                 style="width: 100%">
                             <el-table-column
@@ -38,7 +41,14 @@
                                     sortable
                                     prop="body_size"
                                     label="平均体大小"
-                                    width="100">
+                                    width="150">
+                            </el-table-column>
+                            <el-table-column
+                                    sortable
+                                    width="100"
+                                    prop="count"
+                                    label="次数"
+                                    width="180">
                             </el-table-column>
                             <el-table-column
                                     width="100"
@@ -63,6 +73,9 @@
         </el-tab-pane>
         <el-tab-pane label="列表">
             <el-table
+                    :row-style="{height:'20px'}"
+                    :cell-style="{padding:'0px'}"
+                    style="font-size: 10px"
                     :data="tableData"
                     style="width: 100%">
                 <el-table-column
@@ -87,7 +100,7 @@
                 </el-table-column>
                 <el-table-column
                         sortable
-                        width="100"
+                        width="150"
                         prop="body_size"
                         label="平均体大小"
                         width="180">
@@ -95,6 +108,13 @@
                 <el-table-column
                         sortable
                         width="100"
+                        prop="count"
+                        label="次数"
+                        width="180">
+                </el-table-column>
+                <el-table-column
+                        sortable
+                        width="150"
                         prop="cost_time"
                         label="平均耗时MS">
                     <template #="scope">
@@ -131,7 +151,8 @@
                         path: path_data["path"],
                         method: path_data["method"],
                         cost_time: path_data["cost_time"],
-                        body_size: path_data["body_size"]
+                        body_size: path_data["body_size"],
+                        count: path_data["count"]
                     })
                 }
             }
@@ -142,19 +163,9 @@
     app.mount("#app");
 </script>
 <style>
-    .demo-table-expand {
-        font-size: 0;
-    }
-
-    .demo-table-expand label {
-        width: 90px;
-        color: #99a9bf;
-    }
-
-    .demo-table-expand .el-form-item {
-        margin-right: 0;
-        margin-bottom: 0;
-        width: 50%;
+    .cell {
+        font-size: 13px;
+        padding: 0px;
     }
 </style>
 </body>
