@@ -184,7 +184,7 @@ class UrlStatistics:
         make_dir(recording_path)
         make_file(PATH + "/config.yml")
         self.file_name = str(int(time.time())) + "_data"
-        self.file_path = recording_path + "/" + self.file_name + ".csv"
+        self.file_path = recording_path + "/" + self.file_name + ".txt"
         self.f = open(self.file_path, "w")
         self.writer = self.f
         with open(PATH + "/config.yml") as f:
