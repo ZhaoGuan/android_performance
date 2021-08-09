@@ -13,7 +13,7 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 import os
 import time
 import yaml
-import json
+import ujson
 from mitmproxy.utils import strutils
 from mitmproxy import version
 
@@ -78,10 +78,17 @@ def make_url_time_report():
     new_path = new_dir(recording_path)
     with open(new_path) as f:
         for index, data in enumerate(f.readlines()):
-            row = http_row_data(json.loads(data))
+            row = http_row_data(ujson.loads(data))
+            if "json" not in str(row["response"]["headers"]):
+                row["response"]["content"]["text"] = "非JSON数据"
+            else:
+                try:
+                    row["response"]["content"]["text"] = ujson.loads(row["response"]["content"]["text"])
+                except:
+                    pass
             result.append(row)
     report = JINJA2_ENV.get_template("http_url_time_report.html")
-    result = report.render(data_list=json.dumps(result, ensure_ascii=False))
+    result = report.render(data_list=ujson.dumps(result, ensure_ascii=False))
     report_name = report_path + "/" + str(new_path.split("/")[-1].replace("_data.txt", "")) + "_url_report.html"
     with open(report_name, "w") as f:
         f.write(result)
@@ -102,7 +109,7 @@ def make_url_statistics_report():
     all_data = file_all_data(recording_path)
     temp_result = {}
     for index, data in enumerate(all_data):
-        row = http_row_data(json.loads(data))
+        row = http_row_data(ujson.loads(data))
         url = row["url"]
         url_result = urlparse(url)
         host = url_result.hostname
@@ -141,8 +148,8 @@ def make_url_statistics_report():
         temp_host_data = []
         for path, path_data in host_data.items():
             temp_host_data.append({
-                "cost_time": format(numpy.mean(path_data["cost_time"]), '.2f'),
-                "body_size": format(numpy.mean(path_data["body_size"]), '.2f'),
+                "cost_time": float(format(numpy.mean(path_data["cost_time"]), '.2f')),
+                "body_size": float(format(numpy.mean(path_data["body_size"]), '.2f')),
                 "path": path_data["path"],
                 "method": path_data["method"],
                 "scheme": path_data["scheme"],
@@ -150,7 +157,7 @@ def make_url_statistics_report():
             })
         result.update({host: temp_host_data})
     report = JINJA2_ENV.get_template("http_url_statistics_report.html")
-    result = report.render(data_list=json.dumps(result, ensure_ascii=False))
+    result = report.render(data_list=ujson.dumps(result, ensure_ascii=False))
     report_name = report_path + "/" + str("url_statistics_report.html")
     with open(report_name, "w") as f:
         f.write(result)
@@ -174,10 +181,10 @@ def make_har():
     new_path = new_dir(recording_path)
     with open(new_path) as f:
         for entry in f.readlines():
-            HAR["log"]["entries"].append(json.loads(entry))
+            HAR["log"]["entries"].append(ujson.loads(entry))
     report_name = report_path + "/" + str(new_path.split("/")[-1].replace("_data.txt", "")) + "_data.har"
     with open(report_name, "w") as f:
-        f.write(json.dumps(HAR, ensure_ascii=False, indent=2))
+        f.write(ujson.dumps(HAR, ensure_ascii=False, indent=2))
     return report_name
 
 
@@ -204,54 +211,12 @@ class UrlStatistics:
             else:
                 return False
 
-    def _response(self, flow: http.HTTPFlow):
-        the_time = time.strftime("%Y-%m-%d_%H:%M:%S")
-        request_host = flow.request.host
-        if "json" in str(dict(flow.request.headers)):
-            request_body = str(flow.request.get_text(strict=False))
-        else:
-            request_body = None
-        request_headers = dict(flow.request.headers)
-        request_query = dict(flow.request.query)
-        method = flow.request.method
-        url = flow.request.url
-        path = flow.request.path
-        dict_response_header = dict(flow.response.headers)
-        # json
-        if "json" in str(dict(flow.response.headers)):
-            response_type = "json"
-            response_body = str(flow.response.get_text(strict=False))
-        else:
-            response_type = "other"
-            response_body = None
-        response_header = json.dumps(dict_response_header)
-        status_code = flow.response.status_code
-        spend_time = int((flow.response.timestamp_end - flow.request.timestamp_start) * 1000)
-        response_size = len(flow.response.raw_content) if flow.response.raw_content else 0
-        save_data = {"time": the_time,
-                     "host": request_host,
-                     "url": url,
-                     "path": path,
-                     "request_headers": request_headers,
-                     "request_query": request_query,
-                     "request_body": request_body,
-                     "status_code": status_code,
-                     "method": method,
-                     "response_size": response_size,
-                     "spend_time": spend_time,
-                     "response_type": response_type,
-                     "response_body": response_body,
-                     "response_header": response_header}
-        if self.check_host(request_host):
-            self.writer.writerow(save_data)
-
     def response(self, flow: http.HTTPFlow):
         import typing  # noqa
         from mitmproxy import connection
         SERVERS_SEEN: typing.Set[connection.Server] = set()
         ssl_time = -1
         connect_time = -1
-
         if flow.server_conn and flow.server_conn not in SERVERS_SEEN:
             connect_time = (flow.server_conn.timestamp_tcp_setup -
                             flow.server_conn.timestamp_start)
@@ -326,7 +291,7 @@ class UrlStatistics:
             }
         if flow.server_conn.connected:
             entry["serverIPAddress"] = str(flow.server_conn.ip_address[0])
-        self.f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+        self.f.write(ujson.dumps(entry, ensure_ascii=False) + "\n")
 
     def done(self):
         self.f.close()
