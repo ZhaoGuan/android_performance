@@ -51,7 +51,10 @@ def dir_list(path):
         path += "/"
     dir_lists = os.listdir(path)
     dir_lists.sort(key=lambda fn: os.path.getmtime(path + fn) if not os.path.isdir(path + fn) else 0, reverse=False)
-    dir_lists.remove(".DS_Store")
+    try:
+        dir_lists.remove(".DS_Store")
+    except:
+        pass
     dir_lists = [path + the_dir for the_dir in dir_lists]
     return dir_lists
 
