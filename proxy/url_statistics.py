@@ -90,7 +90,8 @@ def make_url_time_report():
             result.append(row)
     report = JINJA2_ENV.get_template("http_url_time_report.html")
     result = report.render(data_list=ujson.dumps(result, ensure_ascii=False))
-    report_name = report_path + "/" + str(new_path.split("/")[-1].replace("_data.txt", "")) + "_url_report.html"
+    report_name = os.path.abspath(
+        report_path + "/" + str(new_path.split("/")[-1].replace("_data.txt", "")) + "_url_report.html")
     with open(report_name, "w") as f:
         f.write(result)
     return report_name
@@ -159,7 +160,7 @@ def make_url_statistics_report():
         result.update({host: temp_host_data})
     report = JINJA2_ENV.get_template("http_url_statistics_report.html")
     result = report.render(data_list=ujson.dumps(result, ensure_ascii=False))
-    report_name = report_path + "/" + str("url_statistics_report.html")
+    report_name = os.path.abspath(report_path + "/" + str("url_statistics_report.html"))
     with open(report_name, "w") as f:
         f.write(result)
     return report_name
@@ -213,6 +214,7 @@ class UrlStatistics:
                 return False
 
     def response(self, flow: http.HTTPFlow):
+        host_name = flow.request.host
         import typing  # noqa
         from mitmproxy import connection
         SERVERS_SEEN: typing.Set[connection.Server] = set()
@@ -292,7 +294,8 @@ class UrlStatistics:
             }
         if flow.server_conn.connected:
             entry["serverIPAddress"] = str(flow.server_conn.ip_address[0])
-        self.f.write(ujson.dumps(entry, ensure_ascii=False) + "\n")
+        if self.check_host(host_name):
+            self.f.write(ujson.dumps(entry, ensure_ascii=False) + "\n")
 
     def done(self):
         self.f.close()

@@ -171,6 +171,7 @@ def stop_proxy():
 
 def get_proxy_report():
     report_path = make_url_time_report()
+    print(report_path)
     if open_file(report_path) is False:
         proxy_gui_text.insert('end', f"报告路径错误,不存在{report_path}\n")
 
@@ -182,6 +183,7 @@ def get_har():
 
 def get_statistics_report():
     report_path = make_url_statistics_report()
+    print(report_path)
     if open_file(report_path) is False:
         proxy_gui_text.insert('end', f"报告路径错误,不存在{report_path}\n")
 
